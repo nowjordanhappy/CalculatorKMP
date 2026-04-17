@@ -1,0 +1,39 @@
+# Gradle
+.gradle/
+build/
+**/build/
+
+# Local properties (contains SDK paths, signing configs)
+local.properties
+
+# IDE
+.idea/
+*.iml
+.DS_Store
+**/.DS_Store
+
+# Kotlin
+.kotlin/
+
+# Claude
+.claude/
+
+# iOS - user-specific Xcode data
+iosApp/iosApp.xcodeproj/xcuserdata/
+iosApp/iosApp.xcodeproj/project.xcworkspace/xcuserdata/
+*.xcworkspace/xcuserdata/
+*.xcworkspace/xcshareddata/
+
+# iOS - generated/derived files
+iosApp/build/
+DerivedData/
+
+# KMP - generated iOS framework (built by Gradle)
+**/iosApp/Pods/
+composeApp/build/
+
+# Android
+*.apk
+*.aab
+*.keystore
+*.jks

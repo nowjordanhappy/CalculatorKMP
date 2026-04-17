@@ -1,0 +1,33 @@
+[versions]
+kotlin = "2.2.0"
+agp = "8.11.1"
+ksp = "2.2.0-2.0.2"
+compose-multiplatform = "1.9.0-beta01"
+lifecycle = "2.9.1"
+navigation = "2.9.0-beta04"
+koin = "4.1.0"
+activity = "1.10.1"
+minSdk = "24"
+compileSdk = "35"
+targetSdk = "35"
+
+[libraries]
+lifecycle-viewmodel = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycle" }
+lifecycle-runtime = { module = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycle" }
+navigation-compose = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "navigation" }
+koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
+koin-android = { module = "io.insert-koin:koin-android", version.ref = "koin" }
+koin-compose = { module = "io.insert-koin:koin-compose", version.ref = "koin" }
+koin-composevm = { module = "io.insert-koin:koin-compose-viewmodel", version.ref = "koin" }
+activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activity" }
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+android-library = { id = "com.android.library", version.ref = "agp" }
+kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+compose-multiplatform = { id = "org.jetbrains.compose", version.ref = "compose-multiplatform" }
+compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+convention-kmp-library = { id = "convention.kmp.library", version = "unspecified" }
+convention-cmp-feature = { id = "convention.cmp.feature", version = "unspecified" }
+convention-cmp-application = { id = "convention.cmp.application", version = "unspecified" }
