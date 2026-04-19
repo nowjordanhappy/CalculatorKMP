@@ -8,6 +8,7 @@ import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import com.jordanrojas.calculatorkmp.di.appModules
+import com.jordanrojas.calculatorkmp.feature.calculator.presentation.LayoutConfig
 import org.koin.core.context.startKoin
 
 private const val WINDOW_WIDTH_DP = 320
@@ -20,6 +21,12 @@ private const val DISPLAY_HEIGHT_DP = 140
 private const val TOGGLE_ROW_DP = 48
 private const val SPACER_DP = 24
 private const val BOTTOM_PADDING_DP = 5
+
+private fun computeLayoutConfig(): LayoutConfig {
+    val panelWidth = (WINDOW_WIDTH_DP - HORIZONTAL_PADDING_DP).dp
+    val degRadHeight = ((panelWidth.value - (BUTTON_COLS - 1) * BUTTON_SPACING_DP) / BUTTON_COLS).dp
+    return LayoutConfig(panelWidth = panelWidth, degRadHeight = degRadHeight)
+}
 
 private fun computeWindowSize(isScientific: Boolean): DpSize {
     val availableWidth = WINDOW_WIDTH_DP - HORIZONTAL_PADDING_DP
@@ -40,11 +47,11 @@ fun main() {
             state = windowState,
             resizable = false
         ) {
-            App(forceWide = true, onIsScientificChanged = { isScientific ->
-                val x = windowState.position.x
-                val y = windowState.position.y
+            App(forceWide = true, layoutConfig = computeLayoutConfig(), onIsScientificChanged = { isScientific ->
+//                val x = windowState.position.x
+//                val y = windowState.position.y
                 windowState.size = computeWindowSize(isScientific)
-                windowState.position = WindowPosition(x, y)
+//                windowState.position = WindowPosition(x, y)
             })
         }
     }

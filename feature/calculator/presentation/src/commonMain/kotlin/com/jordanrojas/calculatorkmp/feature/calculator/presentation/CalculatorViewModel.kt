@@ -1,6 +1,7 @@
 package com.jordanrojas.calculatorkmp.feature.calculator.presentation
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.jordanrojas.calculatorkmp.core.domain.CalculatorError
 import com.jordanrojas.calculatorkmp.core.domain.CalculatorUtils
 import com.jordanrojas.calculatorkmp.core.domain.Constants
@@ -11,9 +12,11 @@ import com.jordanrojas.calculatorkmp.core.domain.fsm.CalculatorFSM
 import com.jordanrojas.calculatorkmp.core.domain.fsm.FSMAction
 import com.jordanrojas.calculatorkmp.core.domain.fsm.FSMState
 import com.jordanrojas.calculatorkmp.core.domain.fsm.FSMTransition
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 class CalculatorViewModel(private val calculatorUtils: CalculatorUtils) : ViewModel() {
 
@@ -32,11 +35,21 @@ class CalculatorViewModel(private val calculatorUtils: CalculatorUtils) : ViewMo
             CalculatorAction.OnPercentClick -> handlePercent()
             CalculatorAction.OnSignToggleClick -> handleSignToggle()
             CalculatorAction.OnErrorDismiss -> handleErrorDismiss()
-            CalculatorAction.OnScientificToggle -> _state.update { it.copy(isScientific = !it.isScientific) }
+            CalculatorAction.OnScientificToggle -> handleScienficToggle()
             CalculatorAction.OnDegRadToggle -> _state.update { it.copy(isRad = !it.isRad) }
             is CalculatorAction.OnScientificFunction -> Unit
         }
     }
+
+    private fun handleScienficToggle() {
+        //viewModelScope.launch {
+            //delay(200L)
+            _state.update {
+                it.copy(isScientific = !it.isScientific)
+            }
+        //}
+    }
+
 
     private fun appendToExpression(value: String) {
         val wasResult = fsm.state == FSMState.Result

@@ -1,10 +1,17 @@
 package com.jordanrojas.calculatorkmp.feature.calculator.presentation
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandHorizontally
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.runtime.movableContentOf
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -16,23 +23,35 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import org.koin.compose.viewmodel.koinViewModel
 
+data class LayoutConfig(
+    val panelWidth: Dp,
+    val degRadHeight: Dp
+)
+
 private val WIDE_BREAKPOINT = 600.dp
 
 @Composable
 fun CalculatorScreenRoot(
     onIsScientificChanged: (Boolean) -> Unit = {},
     forceWide: Boolean = false,
+    layoutConfig: LayoutConfig? = null,
     viewModel: CalculatorViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsState()
     LaunchedEffect(state.isScientific) { onIsScientificChanged(state.isScientific) }
-    CalculatorScreen(state = state, forceWide = forceWide, onAction = viewModel::onAction)
+    CalculatorScreen(
+        state = state,
+        forceWide = forceWide,
+        layoutConfig = layoutConfig,
+        onAction = viewModel::onAction
+    )
 }
 
 @Composable
 fun CalculatorScreen(
     state: CalculatorState,
     forceWide: Boolean = false,
+    layoutConfig: LayoutConfig? = null,
     onAction: (CalculatorAction) -> Unit
 ) {
     BoxWithConstraints(
@@ -44,12 +63,12 @@ fun CalculatorScreen(
         var stableMaxWidth by remember { mutableStateOf(maxWidth) }
         LaunchedEffect(Unit) {
             snapshotFlow { maxWidth }.collectLatest { width ->
-                //delay(250)
+                delay(250)
                 stableMaxWidth = width
             }
         }
 
-        val isWide = state.isScientific && (forceWide || stableMaxWidth > WIDE_BREAKPOINT)
+        val isWide = forceWide || stableMaxWidth > WIDE_BREAKPOINT
 
         var basicModeWidth by remember { mutableStateOf(maxWidth) }
         LaunchedEffect(state.isScientific) { if (state.isScientific) basicModeWidth = maxWidth }
@@ -61,8 +80,8 @@ fun CalculatorScreen(
             ((maxHeight - fixedOverhead - displayMin - totalSpacings) / 9).coerceIn(40.dp, 56.dp)
         } else null
 
-        val panelWidth = basicModeWidth - 32.dp
-        val degRadHeight = (panelWidth - 36.dp) / 4
+        val panelWidth = layoutConfig?.panelWidth ?: (basicModeWidth - 32.dp)
+        val degRadHeight = layoutConfig?.degRadHeight ?: ((panelWidth - 36.dp) / 4)
 
         val basicGrid = remember {
             movableContentOf {
@@ -97,18 +116,14 @@ fun CalculatorScreen(
             Spacer(Modifier.height(16.dp))
 
             if (isWide) {
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    if (state.isScientific) {
-                        ScientificButtonGrid(
-                            isRad = state.isRad,
-                            showDegRad = true,
-                            degRadHeight = degRadHeight,
-                            onAction = onAction,
-                            modifier = Modifier.width(panelWidth)
-                        )
-                    }
-                    basicGrid()
-                }
+                WideButtonArea(
+                    isScientific = state.isScientific,
+                    panelWidth = panelWidth,
+                    degRadHeight = degRadHeight,
+                    isRad = state.isRad,
+                    onAction = onAction,
+                    basicGrid = basicGrid
+                )
             } else {
                 Column(verticalArrangement = Arrangement.spacedBy(if (portraitButtonHeight != null) 8.dp else 12.dp)) {
                     if (state.isScientific) {
@@ -122,6 +137,37 @@ fun CalculatorScreen(
                     basicGrid()
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun WideButtonArea(
+    isScientific: Boolean,
+    panelWidth: Dp,
+    degRadHeight: Dp,
+    isRad: Boolean,
+    onAction: (CalculatorAction) -> Unit,
+    basicGrid: @Composable () -> Unit
+) {
+    Box(modifier = Modifier.fillMaxWidth()) {
+        Box(modifier = Modifier.align(Alignment.CenterStart)) {
+            AnimatedVisibility(
+                visible = isScientific,
+                enter = expandHorizontally(tween(150), Alignment.End),
+                exit = shrinkHorizontally(tween(150), Alignment.Start)
+            ) {
+                ScientificButtonGrid(
+                    isRad = isRad,
+                    showDegRad = true,
+                    degRadHeight = degRadHeight,
+                    onAction = onAction,
+                    modifier = Modifier.width(panelWidth)
+                )
+            }
+        }
+        Box(modifier = Modifier.align(Alignment.CenterEnd)) {
+            basicGrid()
         }
     }
 }
