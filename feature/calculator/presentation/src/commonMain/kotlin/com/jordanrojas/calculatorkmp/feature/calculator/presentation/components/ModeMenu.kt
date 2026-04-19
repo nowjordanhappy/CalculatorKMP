@@ -11,10 +11,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.delay
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -25,9 +27,18 @@ fun ModeMenu(
     isScientific: Boolean,
     isRad: Boolean = false,
     showDegRad: Boolean = false,
+    delayToggle: Boolean = false,
     onAction: (CalculatorAction) -> Unit
 ) {
     var showMenu by remember { mutableStateOf(false) }
+    var pendingToggle by remember { mutableStateOf(false) }
+    LaunchedEffect(showMenu) {
+        if (!showMenu && pendingToggle) {
+            if (delayToggle) delay(200)
+            pendingToggle = false
+            onAction(CalculatorAction.OnScientificToggle)
+        }
+    }
     Row(
         modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
         horizontalArrangement = Arrangement.End
@@ -43,14 +54,14 @@ fun ModeMenu(
                 DropdownMenuItem(
                     text = { Text("Basic${if (!isScientific) " ✓" else ""}") },
                     onClick = {
-                        if (isScientific) onAction(CalculatorAction.OnScientificToggle)
+                        if (isScientific) pendingToggle = true
                         showMenu = false
                     }
                 )
                 DropdownMenuItem(
                     text = { Text("Scientific${if (isScientific) " ✓" else ""}") },
                     onClick = {
-                        if (!isScientific) onAction(CalculatorAction.OnScientificToggle)
+                        if (!isScientific) pendingToggle = true
                         showMenu = false
                     }
                 )

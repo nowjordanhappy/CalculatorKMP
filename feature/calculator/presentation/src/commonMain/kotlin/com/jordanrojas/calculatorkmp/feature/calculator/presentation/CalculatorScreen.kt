@@ -1,11 +1,5 @@
 package com.jordanrojas.calculatorkmp.feature.calculator.presentation
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.expandHorizontally
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.MaterialTheme
@@ -103,6 +97,7 @@ fun CalculatorScreen(
                 isScientific = state.isScientific,
                 isRad = state.isRad,
                 showDegRad = state.isScientific && !isWide,
+                delayToggle = isWide,
                 onAction = onAction
             )
 
@@ -151,12 +146,8 @@ private fun WideButtonArea(
     basicGrid: @Composable () -> Unit
 ) {
     Box(modifier = Modifier.fillMaxWidth()) {
-        Box(modifier = Modifier.align(Alignment.CenterStart)) {
-            AnimatedVisibility(
-                visible = isScientific,
-                enter = expandHorizontally(tween(150), Alignment.End),
-                exit = shrinkHorizontally(tween(150), Alignment.Start)
-            ) {
+        if (isScientific) {
+            Box(modifier = Modifier.align(Alignment.CenterStart)) {
                 ScientificButtonGrid(
                     isRad = isRad,
                     showDegRad = true,
