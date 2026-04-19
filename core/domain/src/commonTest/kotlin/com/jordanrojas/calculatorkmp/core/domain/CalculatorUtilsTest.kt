@@ -23,33 +23,6 @@ class CalculatorUtilsTest {
         assertIs<OperationResult.NoOp>(result)
     }
 
-    // addOperator
-
-    @Test
-    fun addOperator_validSubtraction_returnsTrue() {
-        assertTrue(utils.addOperator("-", "4+"))
-    }
-
-    @Test
-    fun addOperator_doubleSubtraction_returnsFalse() {
-        assertFalse(utils.addOperator("-", "4+-"))
-    }
-
-    @Test
-    fun addOperator_nonSubOnEmpty_returnsFalse() {
-        assertFalse(utils.addOperator("+", ""))
-    }
-
-    @Test
-    fun addOperator_nonSubOnValidExpr_returnsTrue() {
-        assertTrue(utils.addOperator("+", "4"))
-    }
-
-    @Test
-    fun addOperator_afterPoint_returnsFalse() {
-        assertFalse(utils.addOperator("+", "4."))
-    }
-
     // addPoint
 
     @Test

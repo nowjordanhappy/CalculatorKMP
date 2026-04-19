@@ -1,194 +1,127 @@
 package com.jordanrojas.calculatorkmp.feature.calculator.presentation
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.movableContentOf
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.jordanrojas.calculatorkmp.core.domain.CalculatorError
-import com.jordanrojas.calculatorkmp.core.domain.Constants
+import com.jordanrojas.calculatorkmp.feature.calculator.presentation.components.CalculatorButtonGrid
+import com.jordanrojas.calculatorkmp.feature.calculator.presentation.components.CalculatorDisplay
+import com.jordanrojas.calculatorkmp.feature.calculator.presentation.components.ModeMenu
+import com.jordanrojas.calculatorkmp.feature.calculator.presentation.components.ScientificButtonGrid
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
 import org.koin.compose.viewmodel.koinViewModel
+
+private val WIDE_BREAKPOINT = 600.dp
 
 @Composable
 fun CalculatorScreenRoot(
+    onIsScientificChanged: (Boolean) -> Unit = {},
+    forceWide: Boolean = false,
     viewModel: CalculatorViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsState()
-    CalculatorScreen(state = state, onAction = viewModel::onAction)
+    LaunchedEffect(state.isScientific) { onIsScientificChanged(state.isScientific) }
+    CalculatorScreen(state = state, forceWide = forceWide, onAction = viewModel::onAction)
 }
 
 @Composable
 fun CalculatorScreen(
     state: CalculatorState,
+    forceWide: Boolean = false,
     onAction: (CalculatorAction) -> Unit
 ) {
-    Column(
+    BoxWithConstraints(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
-            .padding(horizontal = 16.dp)
-            .padding(bottom = 24.dp),
-        verticalArrangement = Arrangement.SpaceBetween
+            .safeDrawingPadding()
     ) {
-        // Display
+        var stableMaxWidth by remember { mutableStateOf(maxWidth) }
+        LaunchedEffect(Unit) {
+            snapshotFlow { maxWidth }.collectLatest { width ->
+                //delay(250)
+                stableMaxWidth = width
+            }
+        }
+
+        val isWide = state.isScientific && (forceWide || stableMaxWidth > WIDE_BREAKPOINT)
+
+        var basicModeWidth by remember { mutableStateOf(maxWidth) }
+        LaunchedEffect(state.isScientific) { if (state.isScientific) basicModeWidth = maxWidth }
+
+        val portraitButtonHeight: Dp? = if (state.isScientific && !isWide) {
+            val totalSpacings = 64.dp
+            val fixedOverhead = 52.dp + 16.dp + 10.dp
+            val displayMin = 120.dp
+            ((maxHeight - fixedOverhead - displayMin - totalSpacings) / 9).coerceIn(40.dp, 56.dp)
+        } else null
+
+        val panelWidth = basicModeWidth - 32.dp
+        val degRadHeight = (panelWidth - 36.dp) / 4
+
+        val basicGrid = remember {
+            movableContentOf {
+                CalculatorButtonGrid(
+                    modifier = if (isWide) Modifier.width(panelWidth) else Modifier,
+                    onAction = onAction
+                )
+            }
+        }
+
         Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f)
-                .padding(horizontal = 8.dp),
-            verticalArrangement = Arrangement.Bottom,
-            horizontalAlignment = Alignment.End
+                .fillMaxSize()
+                .padding(horizontal = 16.dp)
+                .padding(bottom = 10.dp),
+            verticalArrangement = Arrangement.SpaceBetween
         ) {
-            if (state.error != null) {
-                Text(
-                    text = when (state.error) {
-                        CalculatorError.INCORRECT_NUMBER -> "Incorrect number"
-                        CalculatorError.INCORRECT_EXPRESSION -> "Incorrect expression"
-                    },
-                    color = MaterialTheme.colorScheme.error,
-                    fontSize = 14.sp,
-                    textAlign = TextAlign.End,
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
-            if (state.result.isNotEmpty()) {
-                val exprScrollState = rememberScrollState()
-                LaunchedEffect(state.expression) { exprScrollState.animateScrollTo(exprScrollState.maxValue) }
-                Row(
-                    modifier = Modifier.fillMaxWidth().horizontalScroll(exprScrollState),
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    Text(
-                        text = state.expression,
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Light,
-                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
-                        softWrap = false
-                    )
+            ModeMenu(
+                isScientific = state.isScientific,
+                isRad = state.isRad,
+                showDegRad = state.isScientific && !isWide,
+                onAction = onAction
+            )
+
+            CalculatorDisplay(
+                expression = state.expression,
+                result = state.result,
+                error = state.error,
+                modifier = Modifier.weight(1f)
+            )
+
+            Spacer(Modifier.height(16.dp))
+
+            if (isWide) {
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    if (state.isScientific) {
+                        ScientificButtonGrid(
+                            isRad = state.isRad,
+                            showDegRad = true,
+                            degRadHeight = degRadHeight,
+                            onAction = onAction,
+                            modifier = Modifier.width(panelWidth)
+                        )
+                    }
+                    basicGrid()
                 }
-                Text(
-                    text = "= ${state.result}",
-                    fontSize = adaptiveFontSize(state.result.length),
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onBackground,
-                    textAlign = TextAlign.End,
-                    maxLines = 1,
-                    modifier = Modifier.fillMaxWidth()
-                )
             } else {
-                val exprScrollState = rememberScrollState()
-                LaunchedEffect(state.expression) { exprScrollState.animateScrollTo(exprScrollState.maxValue) }
-                Row(
-                    modifier = Modifier.fillMaxWidth().horizontalScroll(exprScrollState),
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    Text(
-                        text = state.expression.ifEmpty { "0" },
-                        fontSize = adaptiveFontSize(state.expression.length),
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onBackground,
-                        softWrap = false
-                    )
+                Column(verticalArrangement = Arrangement.spacedBy(if (portraitButtonHeight != null) 8.dp else 12.dp)) {
+                    if (state.isScientific) {
+                        ScientificButtonGrid(
+                            isRad = state.isRad,
+                            showDegRad = false,
+                            buttonHeight = portraitButtonHeight,
+                            onAction = onAction
+                        )
+                    }
+                    basicGrid()
                 }
             }
         }
-
-        Spacer(Modifier.height(24.dp))
-
-        // Button grid
-        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            CalcRow {
-                CalcButton("C", ButtonType.Action) { onAction(CalculatorAction.OnClearClick) }
-                CalcButton("+/-", ButtonType.Action) { onAction(CalculatorAction.OnSignToggleClick) }
-                CalcButton("%", ButtonType.Action) { onAction(CalculatorAction.OnPercentClick) }
-                CalcButton(Constants.OPERATOR_DIV, ButtonType.Operator) { onAction(CalculatorAction.OnOperatorClick(Constants.OPERATOR_DIV)) }
-            }
-            CalcRow {
-                CalcButton("7") { onAction(CalculatorAction.OnNumberClick("7")) }
-                CalcButton("8") { onAction(CalculatorAction.OnNumberClick("8")) }
-                CalcButton("9") { onAction(CalculatorAction.OnNumberClick("9")) }
-                CalcButton(Constants.OPERATOR_MULTI, ButtonType.Operator) { onAction(CalculatorAction.OnOperatorClick(Constants.OPERATOR_MULTI)) }
-            }
-            CalcRow {
-                CalcButton("4") { onAction(CalculatorAction.OnNumberClick("4")) }
-                CalcButton("5") { onAction(CalculatorAction.OnNumberClick("5")) }
-                CalcButton("6") { onAction(CalculatorAction.OnNumberClick("6")) }
-                CalcButton(Constants.OPERATOR_SUB, ButtonType.Operator) { onAction(CalculatorAction.OnOperatorClick(Constants.OPERATOR_SUB)) }
-            }
-            CalcRow {
-                CalcButton("1") { onAction(CalculatorAction.OnNumberClick("1")) }
-                CalcButton("2") { onAction(CalculatorAction.OnNumberClick("2")) }
-                CalcButton("3") { onAction(CalculatorAction.OnNumberClick("3")) }
-                CalcButton(Constants.OPERATOR_SUM, ButtonType.Operator) { onAction(CalculatorAction.OnOperatorClick(Constants.OPERATOR_SUM)) }
-            }
-            CalcRow {
-                CalcButton("⌫", ButtonType.Action) { onAction(CalculatorAction.OnDeleteClick) }
-                CalcButton("0") { onAction(CalculatorAction.OnNumberClick("0")) }
-                CalcButton(".") { onAction(CalculatorAction.OnPointClick) }
-                CalcButton("=", ButtonType.Equals) { onAction(CalculatorAction.OnResolveClick) }
-            }
-        }
-    }
-}
-
-private fun adaptiveFontSize(length: Int) = when {
-    length > 12 -> 32.sp
-    length > 9  -> 44.sp
-    length > 6  -> 54.sp
-    else        -> 64.sp
-}
-
-enum class ButtonType { Number, Operator, Action, Equals }
-
-@Composable
-private fun CalcRow(content: @Composable RowScope.() -> Unit) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        content = content
-    )
-}
-
-@Composable
-private fun RowScope.CalcButton(
-    text: String,
-    type: ButtonType = ButtonType.Number,
-    onClick: () -> Unit
-) {
-    val containerColor = when (type) {
-        ButtonType.Operator, ButtonType.Equals -> MaterialTheme.colorScheme.primary
-        ButtonType.Action -> MaterialTheme.colorScheme.secondary
-        ButtonType.Number -> MaterialTheme.colorScheme.tertiary
-    }
-    val contentColor = when (type) {
-        ButtonType.Operator, ButtonType.Equals -> MaterialTheme.colorScheme.onPrimary
-        ButtonType.Action -> MaterialTheme.colorScheme.onSecondary
-        ButtonType.Number -> MaterialTheme.colorScheme.onTertiary
-    }
-    Button(
-        onClick = onClick,
-        modifier = Modifier
-            .weight(1f)
-            .aspectRatio(1f),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = containerColor,
-            contentColor = contentColor
-        ),
-        shape = RoundedCornerShape(16.dp),
-        elevation = ButtonDefaults.buttonElevation(0.dp)
-    ) {
-        Text(
-            text = text,
-            fontSize = 22.sp,
-            fontWeight = FontWeight.Medium
-        )
     }
 }

@@ -10,4 +10,7 @@ sealed interface CalculatorAction {
     data object OnPercentClick : CalculatorAction
     data object OnSignToggleClick : CalculatorAction
     data object OnErrorDismiss : CalculatorAction
+    data object OnScientificToggle : CalculatorAction
+    data object OnDegRadToggle : CalculatorAction
+    data class OnScientificFunction(val function: String) : CalculatorAction
 }
