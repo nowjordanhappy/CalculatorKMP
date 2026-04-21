@@ -53,8 +53,6 @@ fun CalculatorScreen(
             .background(MaterialTheme.colorScheme.background)
             .safeDrawingPadding()
     ) {
-        // Desktop passes layoutConfig and needs debounce to avoid resize flicker.
-        // On mobile/iOS, use maxWidth directly so rotation is reflected immediately.
         var stableMaxWidth by remember { mutableStateOf(maxWidth) }
         if (layoutConfig != null) {
             LaunchedEffect(Unit) {
@@ -64,7 +62,7 @@ fun CalculatorScreen(
                 }
             }
         } else {
-            stableMaxWidth = maxWidth
+            SideEffect { stableMaxWidth = maxWidth }
         }
 
         val isWide = forceWide || stableMaxWidth > maxHeight || stableMaxWidth > WIDE_BREAKPOINT
