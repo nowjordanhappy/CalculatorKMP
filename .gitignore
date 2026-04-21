@@ -37,3 +37,4 @@ composeApp/build/
 *.aab
 *.keystore
 *.jks
+.derived-data/
