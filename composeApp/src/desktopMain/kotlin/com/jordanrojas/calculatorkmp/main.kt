@@ -4,7 +4,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
-import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import com.jordanrojas.calculatorkmp.di.appModules
@@ -48,10 +47,7 @@ fun main() {
             resizable = false
         ) {
             App(forceWide = true, layoutConfig = computeLayoutConfig(), onIsScientificChanged = { isScientific ->
-//                val x = windowState.position.x
-//                val y = windowState.position.y
                 windowState.size = computeWindowSize(isScientific)
-//                windowState.position = WindowPosition(x, y)
             })
         }
     }
