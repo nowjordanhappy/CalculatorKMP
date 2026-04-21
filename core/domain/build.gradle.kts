@@ -19,5 +19,5 @@ kotlin {
 }
 
 android {
-    namespace = "com.jordanrojas.calculatorkmp.core.domain"
+    namespace = "com.nowjordanhappy.calculatorkmp.core.domain"
 }

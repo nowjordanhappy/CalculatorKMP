@@ -46,10 +46,10 @@ kotlin {
 }
 
 android {
-    namespace = "com.jordanrojas.calculatorkmp"
+    namespace = "com.nowjordanhappy.calculatorkmp"
     compileSdk = libs.versions.compileSdk.get().toInt()
     defaultConfig {
-        applicationId = "com.jordanrojas.calculatorkmp"
+        applicationId = "com.nowjordanhappy.calculatorkmp"
         minSdk = libs.versions.minSdk.get().toInt()
         targetSdk = libs.versions.targetSdk.get().toInt()
         versionCode = 1

@@ -33,5 +33,5 @@ kotlin {
 }
 
 android {
-    namespace = "com.jordanrojas.calculatorkmp.feature.calculator.presentation"
+    namespace = "com.nowjordanhappy.calculatorkmp.feature.calculator.presentation"
 }

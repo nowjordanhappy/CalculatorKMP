@@ -1,0 +1,11 @@
+package com.nowjordanhappy.calculatorkmp.feature.calculator.presentation
+
+import com.nowjordanhappy.calculatorkmp.core.domain.CalculatorError
+
+data class CalculatorState(
+    val expression: String = "",
+    val result: String = "",
+    val error: CalculatorError? = null,
+    val isScientific: Boolean = false,
+    val isRad: Boolean = false
+)
