@@ -23,7 +23,6 @@ data class LayoutConfig(
     val degRadHeight: Dp
 )
 
-
 @Composable
 fun CalculatorScreenRoot(
     onIsScientificChanged: (Boolean) -> Unit = {},
