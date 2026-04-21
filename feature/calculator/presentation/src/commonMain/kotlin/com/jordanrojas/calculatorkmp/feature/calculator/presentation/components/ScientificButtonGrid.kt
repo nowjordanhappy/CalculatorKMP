@@ -43,7 +43,7 @@ fun ScientificButtonGrid(
                 CalcButton(
                     text = if (isRad) "RAD" else "DEG",
                     type = ButtonType.Action,
-                    buttonHeight = degRadHeight ?: buttonHeight,
+                    buttonHeight = buttonHeight ?: degRadHeight,
                     onClick = { onAction(CalculatorAction.OnDegRadToggle) }
                 )
             }

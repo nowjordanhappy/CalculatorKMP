@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
-import androidx.compose.runtime.movableContentOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
@@ -17,12 +16,13 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import org.koin.compose.viewmodel.koinViewModel
 
+private val WIDE_BREAKPOINT = 600.dp
+
 data class LayoutConfig(
     val panelWidth: Dp,
     val degRadHeight: Dp
 )
 
-private val WIDE_BREAKPOINT = 600.dp
 
 @Composable
 fun CalculatorScreenRoot(
@@ -54,18 +54,21 @@ fun CalculatorScreen(
             .background(MaterialTheme.colorScheme.background)
             .safeDrawingPadding()
     ) {
+        // Desktop passes layoutConfig and needs debounce to avoid resize flicker.
+        // On mobile/iOS, use maxWidth directly so rotation is reflected immediately.
         var stableMaxWidth by remember { mutableStateOf(maxWidth) }
-        LaunchedEffect(Unit) {
-            snapshotFlow { maxWidth }.collectLatest { width ->
-                delay(250)
-                stableMaxWidth = width
+        if (layoutConfig != null) {
+            LaunchedEffect(Unit) {
+                snapshotFlow { maxWidth }.collectLatest { width ->
+                    delay(250)
+                    stableMaxWidth = width
+                }
             }
+        } else {
+            stableMaxWidth = maxWidth
         }
 
-        val isWide = forceWide || stableMaxWidth > WIDE_BREAKPOINT
-
-        var basicModeWidth by remember { mutableStateOf(maxWidth) }
-        LaunchedEffect(state.isScientific) { if (state.isScientific) basicModeWidth = maxWidth }
+        val isWide = forceWide || stableMaxWidth > maxHeight || stableMaxWidth > WIDE_BREAKPOINT
 
         val portraitButtonHeight: Dp? = if (state.isScientific && !isWide) {
             val totalSpacings = 64.dp
@@ -74,17 +77,21 @@ fun CalculatorScreen(
             ((maxHeight - fixedOverhead - displayMin - totalSpacings) / 9).coerceIn(40.dp, 56.dp)
         } else null
 
-        val panelWidth = layoutConfig?.panelWidth ?: (basicModeWidth - 32.dp)
-        val degRadHeight = layoutConfig?.degRadHeight ?: ((panelWidth - 36.dp) / 4)
+        // Capped button height for all wide mobile layouts (not desktop — layoutConfig guards that)
+        val wideButtonHeight: Dp? = if (isWide && layoutConfig == null) {
+            val rows = 5
+            val spacings = 12.dp * (rows - 1)
+            val fixedOverhead = 52.dp + 16.dp + 10.dp
+            val displayMin = 80.dp
+            ((maxHeight - fixedOverhead - displayMin - spacings) / rows).coerceIn(36.dp, 64.dp)
+        } else null
 
-        val basicGrid = remember {
-            movableContentOf {
-                CalculatorButtonGrid(
-                    modifier = if (isWide) Modifier.width(panelWidth) else Modifier,
-                    onAction = onAction
-                )
-            }
-        }
+        // Desktop uses fixed LayoutConfig. Mobile computes from screen width.
+        // Scientific wide: 8 columns (4 sci + 4 basic) + 7 inner gaps + 1 panel gap across available width.
+        val availableWidth = stableMaxWidth - 32.dp
+        val scientificPanelWidth = layoutConfig?.panelWidth ?: ((availableWidth - 12.dp) / 2)
+        val panelWidth = layoutConfig?.panelWidth ?: availableWidth
+        val degRadHeight = layoutConfig?.degRadHeight ?: ((scientificPanelWidth - 36.dp) / 4)
 
         Column(
             modifier = Modifier
@@ -114,13 +121,17 @@ fun CalculatorScreen(
                 WideButtonArea(
                     isScientific = state.isScientific,
                     panelWidth = panelWidth,
+                    scientificPanelWidth = scientificPanelWidth,
                     degRadHeight = degRadHeight,
                     isRad = state.isRad,
-                    onAction = onAction,
-                    basicGrid = basicGrid
+                    buttonHeight = wideButtonHeight,
+                    onAction = onAction
                 )
             } else {
-                Column(verticalArrangement = Arrangement.spacedBy(if (portraitButtonHeight != null) 8.dp else 12.dp)) {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(if (portraitButtonHeight != null) 8.dp else 12.dp)
+                ) {
                     if (state.isScientific) {
                         ScientificButtonGrid(
                             isRad = state.isRad,
@@ -129,7 +140,7 @@ fun CalculatorScreen(
                             onAction = onAction
                         )
                     }
-                    basicGrid()
+                    CalculatorButtonGrid(buttonHeight = portraitButtonHeight, onAction = onAction)
                 }
             }
         }
@@ -140,25 +151,36 @@ fun CalculatorScreen(
 private fun WideButtonArea(
     isScientific: Boolean,
     panelWidth: Dp,
+    scientificPanelWidth: Dp,
     degRadHeight: Dp,
     isRad: Boolean,
-    onAction: (CalculatorAction) -> Unit,
-    basicGrid: @Composable () -> Unit
+    buttonHeight: Dp?,
+    onAction: (CalculatorAction) -> Unit
 ) {
-    Box(modifier = Modifier.fillMaxWidth()) {
-        if (isScientific) {
-            Box(modifier = Modifier.align(Alignment.CenterStart)) {
-                ScientificButtonGrid(
-                    isRad = isRad,
-                    showDegRad = true,
-                    degRadHeight = degRadHeight,
-                    onAction = onAction,
-                    modifier = Modifier.width(panelWidth)
-                )
-            }
+    if (isScientific) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            ScientificButtonGrid(
+                isRad = isRad,
+                showDegRad = true,
+                degRadHeight = degRadHeight,
+                buttonHeight = buttonHeight,
+                onAction = onAction,
+                modifier = Modifier.width(scientificPanelWidth)
+            )
+            CalculatorButtonGrid(
+                modifier = Modifier.width(scientificPanelWidth),
+                buttonHeight = buttonHeight,
+                onAction = onAction
+            )
         }
-        Box(modifier = Modifier.align(Alignment.CenterEnd)) {
-            basicGrid()
-        }
+    } else {
+        CalculatorButtonGrid(
+            modifier = Modifier.width(panelWidth),
+            buttonHeight = buttonHeight,
+            onAction = onAction
+        )
     }
 }
