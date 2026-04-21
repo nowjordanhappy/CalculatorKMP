@@ -157,30 +157,25 @@ private fun WideButtonArea(
     buttonHeight: Dp?,
     onAction: (CalculatorAction) -> Unit
 ) {
-    if (isScientific) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            ScientificButtonGrid(
-                isRad = isRad,
-                showDegRad = true,
-                degRadHeight = degRadHeight,
-                buttonHeight = buttonHeight,
-                onAction = onAction,
-                modifier = Modifier.width(scientificPanelWidth)
-            )
+    Box(modifier = Modifier.fillMaxWidth()) {
+        if (isScientific) {
+            Box(modifier = Modifier.align(Alignment.CenterStart)) {
+                ScientificButtonGrid(
+                    isRad = isRad,
+                    showDegRad = true,
+                    degRadHeight = degRadHeight,
+                    buttonHeight = buttonHeight,
+                    onAction = onAction,
+                    modifier = Modifier.width(scientificPanelWidth)
+                )
+            }
+        }
+        Box(modifier = Modifier.align(Alignment.CenterEnd)) {
             CalculatorButtonGrid(
-                modifier = Modifier.width(scientificPanelWidth),
+                modifier = Modifier.width(if (isScientific) scientificPanelWidth else panelWidth),
                 buttonHeight = buttonHeight,
                 onAction = onAction
             )
         }
-    } else {
-        CalculatorButtonGrid(
-            modifier = Modifier.width(panelWidth),
-            buttonHeight = buttonHeight,
-            onAction = onAction
-        )
     }
 }
