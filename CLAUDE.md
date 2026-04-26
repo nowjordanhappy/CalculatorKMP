@@ -11,13 +11,21 @@ Kotlin Multiplatform + Compose Multiplatform calculator app targeting Android, i
   androidMain/MainActivity.kt      ← setContent { App() }
   iosMain/MainViewController.kt    ← ComposeUIViewController { App() }
   desktopMain/main.kt              ← Window { App(forceWide, layoutConfig) }
-  commonMain/App.kt                ← CalculatorTheme { CalculatorScreenRoot(...) }
+  commonMain/
+    App.kt                         ← single collectAsState, passes state to CalculatorScreenRoot
+    AppViewModel.kt                ← app-level state (theme, isScientific), onAction(AppAction)
+    AppState.kt                    ← themeMode, isScientific
+    AppAction.kt                   ← OnThemeChange, OnScientificToggle
+    CalculatorTheme.kt             ← MaterialTheme wrapper, respects ThemeMode
+    settings/SettingsRepository.kt ← plain persistence (no StateFlow); read by AppViewModel on init
+    di/AppModule.kt                ← Koin: SettingsRepository (single), AppViewModel (viewModel)
 
 :feature:calculator:presentation   ← all UI + ViewModel (commonMain)
   CalculatorScreen.kt              ← layout logic, LayoutConfig, WideButtonArea
-  CalculatorViewModel.kt           ← state, FSM wiring, all action handlers
-  CalculatorState.kt               ← expression, result, error, isScientific, isRad
-  CalculatorAction.kt              ← sealed class of all user actions
+  CalculatorViewModel.kt           ← calculator state, FSM wiring, all action handlers
+  CalculatorState.kt               ← expression, result, error, isRad, isAcMode
+  CalculatorAction.kt              ← sealed interface of all calculator user actions
+  ButtonLabels.kt                  ← string constants for all button labels
   components/
     CalcButton.kt                  ← button with ButtonType, buttonHeight?, aspectRatio fallback
     CalcRow.kt                     ← Row(fillMaxWidth, spacedBy 12dp)
@@ -25,14 +33,43 @@ Kotlin Multiplatform + Compose Multiplatform calculator app targeting Android, i
     ScientificButtonGrid.kt        ← 4 rows sci + optional DEG/RAD row
     CalculatorDisplay.kt           ← expression + result display, horizontal scroll
     ModeMenu.kt                    ← ⋮ dropdown, pendingToggle delay for wide layout
+    ThemeToggleButton.kt           ← 3-state cycle icon (SYSTEM→LIGHT→DARK), top-left corner
 
 :core:domain                       ← pure KMP, no Compose
-  CalculatorFSM.kt                 ← FSM orchestrator
-  BasicStrategy.kt                 ← allowed transitions for basic mode
-  CalculatorUtils.kt               ← expression evaluation
-  Operations.kt                    ← math helpers
-  Constants.kt                     ← operators, point symbol
+  ExpressionProcessor.kt          ← top-level facade: appendDigit, evaluate, formatDisplay, formatResult, applyPercent, applySignToggle, needsImplicitMultiply
+  ExpressionParser.kt             ← tokenizer + shunting-yard, handles ^, functions, constants, parens
+  ExpressionEvaluator.kt          ← RPN evaluator, trig (DEG/RAD), all math operations
+  CalculatorError.kt              ← UNDEFINED (÷0, domain errors), MATH_ERROR (malformed)
+  EvaluationResult.kt             ← Success, Error, NoOp
+  ThemeMode.kt                    ← SYSTEM, LIGHT, DARK
+  Constants.kt                    ← operators, point symbol
+  fsm/
+    CalculatorFSM.kt              ← FSM orchestrator, syncFromExpression
+    BasicStrategy.kt              ← transitions for basic mode
+    ScientificStrategy.kt         ← extends basic: Function, OpenParen, CloseParen, Constant, PowerSuffix
+    FSMAction.kt                  ← Digit, Operator, Point, Resolve, Delete, Clear, Percent, SignToggle,
+                                     Function, OpenParen, CloseParen, Constant, PowerSuffix
+    FSMState.kt                   ← Empty, FirstOperand, OperatorEntered, SecondOperand, Result, Error
+    FSMTransition.kt              ← Allow(nextState), Block
 ```
+
+## App-Level State (AppViewModel)
+
+`isScientific` and `themeMode` are app preferences, not calculator state. They live in `AppViewModel` (not `CalculatorViewModel`).
+
+```kotlin
+// AppViewModel owns theme + scientific mode
+val state: StateFlow<AppState>
+fun onAction(action: AppAction)
+
+// SettingsRepository is plain persistence — no StateFlow
+val themeMode: ThemeMode   // computed property
+val isScientific: Boolean  // computed property
+fun setTheme(mode: ThemeMode)
+fun toggleScientific(): Boolean
+```
+
+`main.kt` reads `settingsRepo.isScientific` synchronously (before the window opens) to set the correct initial window size, then observes `AppViewModel.state.isScientific` inside the Window composable for resize on toggle.
 
 ## Layout System
 
@@ -72,17 +109,16 @@ Desktop uses a 250ms debounce on `maxWidth` to avoid recompositions during windo
 ## Desktop Window Sizing
 
 ```kotlin
-// main.kt
-private fun computeWindowSize(isScientific: Boolean): DpSize {
-    // basic: 320dp wide, scientific: 620dp wide, same height
-}
-private fun computeLayoutConfig(): LayoutConfig { ... }
+// main.kt — initial size read from repo before window opens
+val initialIsScientific = GlobalContext.get().get<SettingsRepository>().isScientific
+val windowState = rememberWindowState(size = computeWindowSize(initialIsScientific))
 
-// Window grows/shrinks on scientific toggle
-onIsScientificChanged = { isScientific ->
-    windowState.size = computeWindowSize(isScientific)
-}
+// Inside Window composable — observe AppViewModel for resize on toggle
+val appViewModel = koinViewModel<AppViewModel>()
+val appState by appViewModel.state.collectAsState()
+LaunchedEffect(appState.isScientific) { windowState.size = computeWindowSize(appState.isScientific) }
 ```
+- Basic: 320dp wide; Scientific: 620dp wide (300dp added for sci panel), same height
 
 ### ModeMenu Delay
 On wide layouts, the scientific toggle is deferred 200ms after menu closes so the dropdown dismiss animation completes before the window resizes.
@@ -92,7 +128,7 @@ LaunchedEffect(showMenu) {
     if (!showMenu && pendingToggle) {
         if (delayToggle) delay(200)
         pendingToggle = false
-        onAction(CalculatorAction.OnScientificToggle)
+        onScientificToggle()
     }
 }
 ```
@@ -120,19 +156,40 @@ xcrun simctl list devices | grep Booted
 
 ## FSM (Finite State Machine)
 
-States: `Initial → NumberEntered → OperatorEntered → Result → Error`
-- `BasicStrategy` defines allowed transitions
+States: `Empty → FirstOperand → OperatorEntered → SecondOperand → Result → Error`
+- `BasicStrategy` defines transitions for basic mode
+- `ScientificStrategy` extends basic: adds Function, OpenParen, CloseParen, Constant, PowerSuffix
 - `CalculatorFSM.syncFromExpression()` re-derives FSM state from expression string (used after delete)
-- Scientific functions: `OnScientificFunction(label)` action exists, logic pending (Step 5)
+- On error state: all actions except `Clear` are blocked — digit/operator/function handlers check `wasError` and reset FSM + clear expression before proceeding
 
-## Pending Work (Step 5)
-- 5a: Parser — parentheses + `^` power operator
-- 5b: Parser — function calls (`sin`, `cos`, `ln`, etc.)
-- 5c: FSM — `ScientificStrategy` with new allowed actions
-- 5d: DEG/RAD wired to trig evaluation
+## Scientific Mode
+
+### Buttons
+```
+Row 1: sin   cos   tan   1/x
+Row 2: sin⁻¹ cos⁻¹ tan⁻¹ xʸ
+Row 3: ln    log   √x    x²
+Row 4: π     e     (     )
+Row 5 (wide only): DEG / RAD
+```
+DEG/RAD also appears as a menu item in the ⋮ menu when in portrait scientific mode.
+
+### Implicit Multiplication
+Automatically inserted in two places:
+- `ExpressionProcessor.appendDigit`: inserts `×` when a digit follows `)`, `π`, or `e`
+- `handleScientificFunction`: inserts `×` (via FSM operator + expression prefix) before functions, `(`, and constants when the current expression ends with a digit, `.`, `)`, `π`, or `e`
+
+### Expression Evaluation
+`ExpressionParser` tokenizes and applies shunting-yard algorithm supporting:
+- Binary operators: `+`, `-`, `×`, `÷`, `^`
+- Functions: `sin`, `cos`, `tan`, `asin`, `acos`, `atan`, `ln`, `log`, `sqrt`
+- Constants: `π` (3.14159…), `e` (2.71828…)
+- Parentheses (auto-balanced on `=` press)
+- DEG/RAD passed through to trig functions
 
 ## Coding Conventions
 - No Co-Authored-By in commits
 - No comments unless the WHY is non-obvious
 - No unused imports
 - `Dp * Int` works, `Int * Dp` does not — always write `12.dp * n` not `n * 12.dp`
+- All ViewModels: single state data class + `onAction(Action)` dispatcher, no separate public mutator functions
