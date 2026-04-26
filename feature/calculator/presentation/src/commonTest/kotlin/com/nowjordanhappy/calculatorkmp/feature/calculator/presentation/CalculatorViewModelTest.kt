@@ -695,4 +695,87 @@ class CalculatorViewModelTest {
         val result = viewModel.formatResult(3.50)
         assertEquals("3.5", result)
     }
+
+    // Implicit multiplication
+
+    @Test
+    fun digitAfterCloseParen_insertsMultiply() {
+        viewModel.onAction(CalculatorAction.OnScientificFunction(ButtonLabels.Scientific.SIN))
+        viewModel.onAction(CalculatorAction.OnNumberClick("3"))
+        viewModel.onAction(CalculatorAction.OnNumberClick("0"))
+        viewModel.onAction(CalculatorAction.OnScientificFunction(ButtonLabels.Scientific.CLOSE_PAREN))
+        viewModel.onAction(CalculatorAction.OnNumberClick("2"))
+        assertEquals("sin(30)x2", viewModel.state.value.expression)
+    }
+
+    @Test
+    fun digitAfterPi_insertsMultiply() {
+        viewModel.onAction(CalculatorAction.OnScientificFunction(ButtonLabels.Scientific.PI))
+        viewModel.onAction(CalculatorAction.OnNumberClick("2"))
+        assertEquals("πx2", viewModel.state.value.expression)
+    }
+
+    @Test
+    fun digitAfterE_insertsMultiply() {
+        viewModel.onAction(CalculatorAction.OnScientificFunction(ButtonLabels.Scientific.E))
+        viewModel.onAction(CalculatorAction.OnNumberClick("3"))
+        assertEquals("ex3", viewModel.state.value.expression)
+    }
+
+    @Test
+    fun functionAfterDigit_insertsMultiply() {
+        viewModel.onAction(CalculatorAction.OnNumberClick("2"))
+        viewModel.onAction(CalculatorAction.OnScientificFunction(ButtonLabels.Scientific.SIN))
+        assertEquals("2xsin(", viewModel.state.value.expression)
+    }
+
+    @Test
+    fun functionAfterCloseParen_insertsMultiply() {
+        viewModel.onAction(CalculatorAction.OnScientificFunction(ButtonLabels.Scientific.SIN))
+        viewModel.onAction(CalculatorAction.OnNumberClick("3"))
+        viewModel.onAction(CalculatorAction.OnNumberClick("0"))
+        viewModel.onAction(CalculatorAction.OnScientificFunction(ButtonLabels.Scientific.CLOSE_PAREN))
+        viewModel.onAction(CalculatorAction.OnScientificFunction(ButtonLabels.Scientific.COS))
+        assertEquals("sin(30)xcos(", viewModel.state.value.expression)
+    }
+
+    @Test
+    fun piAfterDigit_insertsMultiply() {
+        viewModel.onAction(CalculatorAction.OnNumberClick("2"))
+        viewModel.onAction(CalculatorAction.OnScientificFunction(ButtonLabels.Scientific.PI))
+        assertEquals("2xπ", viewModel.state.value.expression)
+    }
+
+    @Test
+    fun openParenAfterDigit_insertsMultiply() {
+        viewModel.onAction(CalculatorAction.OnNumberClick("2"))
+        viewModel.onAction(CalculatorAction.OnScientificFunction(ButtonLabels.Scientific.OPEN_PAREN))
+        assertEquals("2x(", viewModel.state.value.expression)
+    }
+
+    @Test
+    fun functionAfterOperator_noImplicitMultiply() {
+        viewModel.onAction(CalculatorAction.OnNumberClick("5"))
+        viewModel.onAction(CalculatorAction.OnOperatorClick("+"))
+        viewModel.onAction(CalculatorAction.OnScientificFunction(ButtonLabels.Scientific.SIN))
+        assertEquals("5+sin(", viewModel.state.value.expression)
+    }
+
+    @Test
+    fun functionFromEmpty_noImplicitMultiply() {
+        viewModel.onAction(CalculatorAction.OnScientificFunction(ButtonLabels.Scientific.SIN))
+        assertEquals("sin(", viewModel.state.value.expression)
+    }
+
+    @Test
+    fun implicitMultiply_evaluatesCorrectly() {
+        viewModel.onAction(CalculatorAction.OnNumberClick("2"))
+        viewModel.onAction(CalculatorAction.OnScientificFunction(ButtonLabels.Scientific.OPEN_PAREN))
+        viewModel.onAction(CalculatorAction.OnNumberClick("3"))
+        viewModel.onAction(CalculatorAction.OnOperatorClick("+"))
+        viewModel.onAction(CalculatorAction.OnNumberClick("4"))
+        viewModel.onAction(CalculatorAction.OnScientificFunction(ButtonLabels.Scientific.CLOSE_PAREN))
+        viewModel.onAction(CalculatorAction.OnResolveClick)
+        assertEquals("14", viewModel.state.value.expression)
+    }
 }

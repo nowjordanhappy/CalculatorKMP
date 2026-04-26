@@ -56,39 +56,38 @@ class CalculatorViewModel(private val calculatorUtils: CalculatorUtils) : ViewMo
                 current == "0" && value == "0" -> current
                 current.isNotEmpty() &&
                     current.last().toString() in
-                    listOf(
-                        Constants.OPERATOR_MULTI,
-                        Constants.OPERATOR_DIV,
-                        Constants.OPERATOR_SUM,
-                        Constants.OPERATOR_SUB,
-                        Constants.OPERATOR_POWER,
-                    ) &&
+                        listOf(
+                            Constants.OPERATOR_MULTI,
+                            Constants.OPERATOR_DIV,
+                            Constants.OPERATOR_SUM,
+                            Constants.OPERATOR_SUB,
+                            Constants.OPERATOR_POWER,
+                        ) &&
                     value == "0" -> current + value
-
                 current.length >= 2 &&
                     current.last().toString() == "0" &&
                     current[current.length - 2].toString() in
-                    listOf(
-                        Constants.OPERATOR_MULTI,
-                        Constants.OPERATOR_DIV,
-                        Constants.OPERATOR_SUM,
-                        Constants.OPERATOR_SUB,
-                        Constants.OPERATOR_POWER,
-                    ) &&
+                        listOf(
+                            Constants.OPERATOR_MULTI,
+                            Constants.OPERATOR_DIV,
+                            Constants.OPERATOR_SUM,
+                            Constants.OPERATOR_SUB,
+                            Constants.OPERATOR_POWER,
+                        ) &&
                     value == "0" -> current
-
                 current.length >= 2 &&
                     current.last().toString() == "0" &&
                     current[current.length - 2].toString() in
-                    listOf(
-                        Constants.OPERATOR_MULTI,
-                        Constants.OPERATOR_DIV,
-                        Constants.OPERATOR_SUM,
-                        Constants.OPERATOR_SUB,
-                        Constants.OPERATOR_POWER,
-                    ) &&
+                        listOf(
+                            Constants.OPERATOR_MULTI,
+                            Constants.OPERATOR_DIV,
+                            Constants.OPERATOR_SUM,
+                            Constants.OPERATOR_SUB,
+                            Constants.OPERATOR_POWER,
+                        ) &&
                     value != "0" -> current.dropLast(1) + value
-
+                current.isNotEmpty() && (current.last() == ')' || current.last() == 'π' || current.last() == 'e') ->
+                    current + Constants.OPERATOR_MULTI + value
                 else -> current + value
             }
         val preview = calculatorUtils.checkOrResolve(newExpression, false, _state.value.isRad)
@@ -171,16 +170,13 @@ class CalculatorViewModel(private val calculatorUtils: CalculatorUtils) : ViewMo
                         _state.update {
                             it.copy(expression = formatResult(result.value), result = "", error = null, isAcMode = true)
                         }
-
                     is OperationResult.Error -> {
                         fsm.syncFromExpression(expr)
                         _state.update { it.copy(error = result.error, isAcMode = true) }
                     }
-
                     OperationResult.NoOp -> Unit
                 }
             }
-
             else -> Unit
         }
     }
@@ -280,15 +276,27 @@ class CalculatorViewModel(private val calculatorUtils: CalculatorUtils) : ViewMo
                     if (openCount <= 0) return
                     FSMAction.CloseParen to ")"
                 }
-
                 else -> return
             }
 
         val wasResult = fsm.state == FSMState.Result
+        val current = if (wasResult || wasError) "" else _state.value.expression
+
+        val implicitMultiply =
+            when (fsmAction) {
+                FSMAction.Function,
+                FSMAction.OpenParen,
+                FSMAction.Constant, -> needsImplicitMultiply(current)
+                else -> false
+            }
+
+        if (implicitMultiply) {
+            if (fsm.process(FSMAction.Operator(Constants.OPERATOR_MULTI)) is FSMTransition.Block) return
+        }
         if (fsm.process(fsmAction) is FSMTransition.Block) return
 
-        val current = if (wasResult || wasError) "" else _state.value.expression
-        val newExpression = current + fragment
+        val prefix = if (implicitMultiply) Constants.OPERATOR_MULTI else ""
+        val newExpression = current + prefix + fragment
 
         val preview = calculatorUtils.checkOrResolve(newExpression, false, _state.value.isRad)
         _state.update { state ->
@@ -299,6 +307,12 @@ class CalculatorViewModel(private val calculatorUtils: CalculatorUtils) : ViewMo
                 isAcMode = false,
             )
         }
+    }
+
+    private fun needsImplicitMultiply(expr: String): Boolean {
+        if (expr.isEmpty()) return false
+        val last = expr.last()
+        return last.isDigit() || last == '.' || last == ')' || last == 'π' || last == 'e'
     }
 
     internal fun formatResult(value: Double): String {
