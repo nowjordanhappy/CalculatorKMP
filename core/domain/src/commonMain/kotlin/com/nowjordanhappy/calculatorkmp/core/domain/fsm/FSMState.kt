@@ -6,5 +6,5 @@ enum class FSMState {
     OperatorEntered,
     SecondOperand,
     Result,
-    Error
+    Error,
 }

@@ -6,7 +6,6 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class OperationsTest {
-
     // canReplaceOperator
 
     @Test
@@ -95,7 +94,7 @@ class OperationsTest {
     fun tryResolve_incompleteExpression_isFromResolve_returnsError() {
         val result = Operations.tryResolve("5+", true)
         assertTrue(result is OperationResult.Error)
-        assertEquals(CalculatorError.INCORRECT_EXPRESSION, (result as OperationResult.Error).error)
+        assertEquals(CalculatorError.MATH_ERROR, (result as OperationResult.Error).error)
     }
 
     @Test
@@ -144,5 +143,66 @@ class OperationsTest {
     @Test
     fun lastNumberSegment_minusAsOperator_returnsAfter() {
         assertEquals("3", Operations.lastNumberSegment("5-3"))
+    }
+
+    // error type distinction
+
+    @Test
+    fun tryResolve_divisionByZero_returnsUndefined() {
+        val result = Operations.tryResolve("5÷0", true)
+        assertTrue(result is OperationResult.Error)
+        assertEquals(CalculatorError.UNDEFINED, (result as OperationResult.Error).error)
+    }
+
+    @Test
+    fun tryResolve_sqrtNegative_returnsUndefined() {
+        val result = Operations.tryResolve("sqrt(-1)", true)
+        assertTrue(result is OperationResult.Error)
+        assertEquals(CalculatorError.UNDEFINED, (result as OperationResult.Error).error)
+    }
+
+    @Test
+    fun tryResolve_emptyFunction_returnsMathError() {
+        val result = Operations.tryResolve("sin()", true)
+        assertTrue(result is OperationResult.Error)
+        assertEquals(CalculatorError.MATH_ERROR, (result as OperationResult.Error).error)
+    }
+
+    @Test
+    fun tryResolve_zeroToZero_returnsUndefined() {
+        val result = Operations.tryResolve("0^0", true)
+        assertTrue(result is OperationResult.Error)
+        assertEquals(CalculatorError.UNDEFINED, (result as OperationResult.Error).error)
+    }
+
+    // autoBalanceParens — via tryResolve with isFromResolve = true
+
+    @Test
+    fun tryResolve_unclosedFunction_autoBalancesAndEvaluates() {
+        val result = Operations.tryResolve("sin(30", false, false) // DEG
+        // live preview returns NoOp (no auto-balance)
+        assertEquals(OperationResult.NoOp, result)
+    }
+
+    @Test
+    fun tryResolve_unclosedFunction_onResolve_autoBalancesAndEvaluates() {
+        val result = Operations.tryResolve("sin(30", true, false) // DEG, = pressed
+        assertTrue(result is OperationResult.Success)
+        assertEquals(0.5, (result as OperationResult.Success).value, 1e-9)
+    }
+
+    @Test
+    fun tryResolve_nestedUnclosed_onResolve_autoBalancesAll() {
+        val result = Operations.tryResolve("sin(cos(0", true, true) // RAD
+        assertTrue(result is OperationResult.Success)
+        // cos(0)=1, sin(1)≈0.8414709848
+        assertEquals(kotlin.math.sin(1.0), (result as OperationResult.Success).value, 1e-9)
+    }
+
+    @Test
+    fun tryResolve_alreadyBalanced_onResolve_unchanged() {
+        val result = Operations.tryResolve("sin(30)", true, false) // DEG
+        assertTrue(result is OperationResult.Success)
+        assertEquals(0.5, (result as OperationResult.Success).value, 1e-9)
     }
 }

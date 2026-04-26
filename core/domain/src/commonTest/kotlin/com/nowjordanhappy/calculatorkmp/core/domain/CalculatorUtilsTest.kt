@@ -2,11 +2,10 @@ package com.nowjordanhappy.calculatorkmp.core.domain
 
 import kotlin.test.Test
 import kotlin.test.assertFalse
-import kotlin.test.assertTrue
 import kotlin.test.assertIs
+import kotlin.test.assertTrue
 
 class CalculatorUtilsTest {
-
     private val utils = CalculatorUtils()
 
     // checkOrResolve

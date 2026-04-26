@@ -6,7 +6,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertIs
 
 class CalculatorFSMTest {
-
     private lateinit var fsm: CalculatorFSM
 
     @BeforeTest
@@ -36,9 +35,10 @@ class CalculatorFSMTest {
     }
 
     @Test
-    fun empty_point_blocks() {
+    fun empty_point_allowsFirstOperand() {
         val result = fsm.process(FSMAction.Point)
-        assertIs<FSMTransition.Block>(result)
+        assertIs<FSMTransition.Allow>(result)
+        assertEquals(FSMState.FirstOperand, fsm.state)
     }
 
     @Test
@@ -105,11 +105,12 @@ class CalculatorFSMTest {
     }
 
     @Test
-    fun operatorEntered_resolve_movesToError() {
+    fun operatorEntered_resolve_blocks() {
         fsm.process(FSMAction.Digit("5"))
         fsm.process(FSMAction.Operator("+"))
-        fsm.process(FSMAction.Resolve)
-        assertEquals(FSMState.Error, fsm.state)
+        val result = fsm.process(FSMAction.Resolve)
+        assertIs<FSMTransition.Block>(result)
+        assertEquals(FSMState.OperatorEntered, fsm.state)
     }
 
     // SecondOperand state
@@ -210,26 +211,5 @@ class CalculatorFSMTest {
     fun syncFromExpression_twoOperands_setsSecondOperand() {
         fsm.syncFromExpression("5+3")
         assertEquals(FSMState.SecondOperand, fsm.state)
-    }
-
-    // Error state
-
-    @Test
-    fun error_clear_movesToEmpty() {
-        fsm.process(FSMAction.Digit("5"))
-        fsm.process(FSMAction.Operator("+"))
-        fsm.process(FSMAction.Resolve)
-        assertEquals(FSMState.Error, fsm.state)
-        fsm.process(FSMAction.Clear)
-        assertEquals(FSMState.Empty, fsm.state)
-    }
-
-    @Test
-    fun error_digit_blocks() {
-        fsm.process(FSMAction.Digit("5"))
-        fsm.process(FSMAction.Operator("+"))
-        fsm.process(FSMAction.Resolve)
-        val result = fsm.process(FSMAction.Digit("3"))
-        assertIs<FSMTransition.Block>(result)
     }
 }
