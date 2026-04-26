@@ -1,10 +1,6 @@
 package com.nowjordanhappy.calculatorkmp.feature.calculator.presentation.components
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MaterialTheme
@@ -16,8 +12,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.nowjordanhappy.calculatorkmp.feature.calculator.presentation.CalculatorAction
 import kotlinx.coroutines.delay
@@ -39,41 +33,36 @@ fun ModeMenu(
             onAction(CalculatorAction.OnScientificToggle)
         }
     }
-    Row(
-        modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
-        horizontalArrangement = Arrangement.End,
-    ) {
-        Box {
-            TextButton(onClick = { showMenu = true }) {
-                Text("⋮", fontSize = 20.sp, color = MaterialTheme.colorScheme.onBackground)
-            }
-            DropdownMenu(
-                expanded = showMenu,
-                onDismissRequest = { showMenu = false },
-            ) {
+    Box {
+        TextButton(onClick = { showMenu = true }) {
+            Text("⋮", fontSize = 20.sp, color = MaterialTheme.colorScheme.onBackground)
+        }
+        DropdownMenu(
+            expanded = showMenu,
+            onDismissRequest = { showMenu = false },
+        ) {
+            DropdownMenuItem(
+                text = { Text("Basic${if (!isScientific) " ✓" else ""}") },
+                onClick = {
+                    if (isScientific) pendingToggle = true
+                    showMenu = false
+                },
+            )
+            DropdownMenuItem(
+                text = { Text("Scientific${if (isScientific) " ✓" else ""}") },
+                onClick = {
+                    if (!isScientific) pendingToggle = true
+                    showMenu = false
+                },
+            )
+            if (showDegRad) {
                 DropdownMenuItem(
-                    text = { Text("Basic${if (!isScientific) " ✓" else ""}") },
+                    text = { Text(if (isRad) "DEG" else "RAD") },
                     onClick = {
-                        if (isScientific) pendingToggle = true
+                        onAction(CalculatorAction.OnDegRadToggle)
                         showMenu = false
                     },
                 )
-                DropdownMenuItem(
-                    text = { Text("Scientific${if (isScientific) " ✓" else ""}") },
-                    onClick = {
-                        if (!isScientific) pendingToggle = true
-                        showMenu = false
-                    },
-                )
-                if (showDegRad) {
-                    DropdownMenuItem(
-                        text = { Text(if (isRad) "DEG" else "RAD") },
-                        onClick = {
-                            onAction(CalculatorAction.OnDegRadToggle)
-                            showMenu = false
-                        },
-                    )
-                }
             }
         }
     }

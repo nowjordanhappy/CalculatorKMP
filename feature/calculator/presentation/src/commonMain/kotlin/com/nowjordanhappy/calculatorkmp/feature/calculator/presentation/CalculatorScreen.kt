@@ -8,10 +8,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.nowjordanhappy.calculatorkmp.core.domain.ThemeMode
 import com.nowjordanhappy.calculatorkmp.feature.calculator.presentation.components.CalculatorButtonGrid
 import com.nowjordanhappy.calculatorkmp.feature.calculator.presentation.components.CalculatorDisplay
 import com.nowjordanhappy.calculatorkmp.feature.calculator.presentation.components.ModeMenu
 import com.nowjordanhappy.calculatorkmp.feature.calculator.presentation.components.ScientificButtonGrid
+import com.nowjordanhappy.calculatorkmp.feature.calculator.presentation.components.ThemeToggleButton
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import org.koin.compose.viewmodel.koinViewModel
@@ -28,6 +30,8 @@ fun CalculatorScreenRoot(
     onIsScientificChanged: (Boolean) -> Unit = {},
     forceWide: Boolean = false,
     layoutConfig: LayoutConfig? = null,
+    themeMode: ThemeMode = ThemeMode.SYSTEM,
+    onThemeChange: (ThemeMode) -> Unit = {},
     viewModel: CalculatorViewModel = koinViewModel(),
 ) {
     val state by viewModel.state.collectAsState()
@@ -36,6 +40,8 @@ fun CalculatorScreenRoot(
         state = state,
         forceWide = forceWide,
         layoutConfig = layoutConfig,
+        themeMode = themeMode,
+        onThemeChange = onThemeChange,
         onAction = viewModel::onAction,
     )
 }
@@ -45,6 +51,8 @@ fun CalculatorScreen(
     state: CalculatorState,
     forceWide: Boolean = false,
     layoutConfig: LayoutConfig? = null,
+    themeMode: ThemeMode = ThemeMode.SYSTEM,
+    onThemeChange: (ThemeMode) -> Unit = {},
     onAction: (CalculatorAction) -> Unit,
 ) {
     BoxWithConstraints(
@@ -99,13 +107,20 @@ fun CalculatorScreen(
             modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp).padding(bottom = 10.dp),
             verticalArrangement = Arrangement.SpaceBetween,
         ) {
-            ModeMenu(
-                isScientific = state.isScientific,
-                isRad = state.isRad,
-                showDegRad = state.isScientific && !isWide,
-                delayToggle = isWide,
-                onAction = onAction,
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                ThemeToggleButton(themeMode = themeMode, onThemeChange = onThemeChange)
+                ModeMenu(
+                    isScientific = state.isScientific,
+                    isRad = state.isRad,
+                    showDegRad = state.isScientific && !isWide,
+                    delayToggle = isWide,
+                    onAction = onAction,
+                )
+            }
 
             CalculatorDisplay(
                 expression = state.expression,

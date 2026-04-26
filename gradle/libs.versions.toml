@@ -8,6 +8,7 @@ navigation = "2.9.0-beta04"
 koin = "4.1.0"
 activity = "1.10.1"
 spotless = "6.25.0"
+multiplatform-settings = "1.1.0"
 minSdk = "24"
 compileSdk = "35"
 targetSdk = "35"
@@ -21,6 +22,7 @@ koin-android = { module = "io.insert-koin:koin-android", version.ref = "koin" }
 koin-compose = { module = "io.insert-koin:koin-compose", version.ref = "koin" }
 koin-composevm = { module = "io.insert-koin:koin-compose-viewmodel", version.ref = "koin" }
 activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activity" }
+multiplatform-settings-noarg = { module = "com.russhwolf:multiplatform-settings-no-arg", version.ref = "multiplatform-settings" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

@@ -6,6 +6,7 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import com.nowjordanhappy.calculatorkmp.core.domain.ThemeMode
 
 val Orange = Color(0xFFFF9500)
 val OrangeLight = Color(0xFFFFB340)
@@ -43,6 +44,12 @@ private val LightColors =
     )
 
 @Composable
-fun CalculatorTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable () -> Unit) {
-    MaterialTheme(colorScheme = if (darkTheme) DarkColors else LightColors, content = content)
+fun CalculatorTheme(themeMode: ThemeMode = ThemeMode.SYSTEM, content: @Composable () -> Unit) {
+    val isDark =
+        when (themeMode) {
+            ThemeMode.SYSTEM -> isSystemInDarkTheme()
+            ThemeMode.LIGHT -> false
+            ThemeMode.DARK -> true
+        }
+    MaterialTheme(colorScheme = if (isDark) DarkColors else LightColors, content = content)
 }
