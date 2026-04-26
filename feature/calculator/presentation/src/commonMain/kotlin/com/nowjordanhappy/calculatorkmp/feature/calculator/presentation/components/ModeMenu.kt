@@ -22,6 +22,7 @@ fun ModeMenu(
     isRad: Boolean = false,
     showDegRad: Boolean = false,
     delayToggle: Boolean = false,
+    onScientificToggle: () -> Unit,
     onAction: (CalculatorAction) -> Unit,
 ) {
     var showMenu by remember { mutableStateOf(false) }
@@ -30,7 +31,7 @@ fun ModeMenu(
         if (!showMenu && pendingToggle) {
             if (delayToggle) delay(200)
             pendingToggle = false
-            onAction(CalculatorAction.OnScientificToggle)
+            onScientificToggle()
         }
     }
     Box {

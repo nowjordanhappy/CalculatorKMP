@@ -6,7 +6,6 @@ data class CalculatorState(
     val expression: String = "",
     val result: String = "",
     val error: CalculatorError? = null,
-    val isScientific: Boolean = false,
     val isRad: Boolean = false,
     val isAcMode: Boolean = true,
 )

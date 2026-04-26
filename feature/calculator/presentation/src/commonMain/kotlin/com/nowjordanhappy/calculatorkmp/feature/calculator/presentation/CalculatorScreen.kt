@@ -27,17 +27,19 @@ data class LayoutConfig(
 
 @Composable
 fun CalculatorScreenRoot(
-    onIsScientificChanged: (Boolean) -> Unit = {},
-    forceWide: Boolean = false,
-    layoutConfig: LayoutConfig? = null,
+    isScientific: Boolean = false,
+    onScientificToggle: () -> Unit = {},
     themeMode: ThemeMode = ThemeMode.SYSTEM,
     onThemeChange: (ThemeMode) -> Unit = {},
+    forceWide: Boolean = false,
+    layoutConfig: LayoutConfig? = null,
     viewModel: CalculatorViewModel = koinViewModel(),
 ) {
     val state by viewModel.state.collectAsState()
-    LaunchedEffect(state.isScientific) { onIsScientificChanged(state.isScientific) }
     CalculatorScreen(
         state = state,
+        isScientific = isScientific,
+        onScientificToggle = onScientificToggle,
         forceWide = forceWide,
         layoutConfig = layoutConfig,
         themeMode = themeMode,
@@ -49,6 +51,8 @@ fun CalculatorScreenRoot(
 @Composable
 fun CalculatorScreen(
     state: CalculatorState,
+    isScientific: Boolean = false,
+    onScientificToggle: () -> Unit = {},
     forceWide: Boolean = false,
     layoutConfig: LayoutConfig? = null,
     themeMode: ThemeMode = ThemeMode.SYSTEM,
@@ -74,7 +78,7 @@ fun CalculatorScreen(
         val isWide = forceWide || stableMaxWidth > maxHeight || stableMaxWidth > WIDE_BREAKPOINT
 
         val portraitButtonHeight: Dp? =
-            if (state.isScientific && !isWide) {
+            if (isScientific && !isWide) {
                 val totalSpacings = 64.dp
                 val fixedOverhead = 52.dp + 16.dp + 10.dp
                 val displayMin = 120.dp
@@ -114,10 +118,11 @@ fun CalculatorScreen(
             ) {
                 ThemeToggleButton(themeMode = themeMode, onThemeChange = onThemeChange)
                 ModeMenu(
-                    isScientific = state.isScientific,
+                    isScientific = isScientific,
                     isRad = state.isRad,
-                    showDegRad = state.isScientific && !isWide,
+                    showDegRad = isScientific && !isWide,
                     delayToggle = isWide,
+                    onScientificToggle = onScientificToggle,
                     onAction = onAction,
                 )
             }
@@ -133,7 +138,7 @@ fun CalculatorScreen(
 
             if (isWide) {
                 WideButtonArea(
-                    isScientific = state.isScientific,
+                    isScientific = isScientific,
                     panelWidth = panelWidth,
                     scientificPanelWidth = scientificPanelWidth,
                     degRadHeight = degRadHeight,
@@ -147,7 +152,7 @@ fun CalculatorScreen(
                     modifier = Modifier.fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(if (portraitButtonHeight != null) 8.dp else 12.dp),
                 ) {
-                    if (state.isScientific) {
+                    if (isScientific) {
                         ScientificButtonGrid(
                             isRad = state.isRad,
                             showDegRad = false,

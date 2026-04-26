@@ -1,5 +1,8 @@
 package com.nowjordanhappy.calculatorkmp
 
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
@@ -7,6 +10,9 @@ import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import com.nowjordanhappy.calculatorkmp.di.appModules
 import com.nowjordanhappy.calculatorkmp.feature.calculator.presentation.LayoutConfig
+import com.nowjordanhappy.calculatorkmp.settings.SettingsRepository
+import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.context.GlobalContext
 import org.koin.core.context.startKoin
 
 private const val WINDOW_WIDTH_DP = 320
@@ -38,13 +44,13 @@ private fun computeWindowSize(isScientific: Boolean): DpSize {
 fun main() {
     startKoin { modules(appModules) }
     application {
-        val windowState = rememberWindowState(size = computeWindowSize(false))
+        val initialIsScientific = GlobalContext.get().get<SettingsRepository>().isScientific
+        val windowState = rememberWindowState(size = computeWindowSize(initialIsScientific))
         Window(onCloseRequest = ::exitApplication, title = "CalculatorKMP", state = windowState, resizable = false) {
-            App(
-                forceWide = true,
-                layoutConfig = computeLayoutConfig(),
-                onIsScientificChanged = { isScientific -> windowState.size = computeWindowSize(isScientific) }
-            )
+            val appViewModel = koinViewModel<AppViewModel>()
+            val appState by appViewModel.state.collectAsState()
+            LaunchedEffect(appState.isScientific) { windowState.size = computeWindowSize(appState.isScientific) }
+            App(forceWide = true, layoutConfig = computeLayoutConfig())
         }
     }
 }

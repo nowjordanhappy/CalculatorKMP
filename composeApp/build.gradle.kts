@@ -26,6 +26,8 @@ kotlin {
             implementation(compose.material3)
             implementation(libs.koin.core)
             implementation(libs.koin.compose)
+            implementation(libs.koin.composevm)
+            implementation(libs.lifecycle.viewmodel)
             implementation(libs.multiplatform.settings.noarg)
         }
         androidMain.dependencies {

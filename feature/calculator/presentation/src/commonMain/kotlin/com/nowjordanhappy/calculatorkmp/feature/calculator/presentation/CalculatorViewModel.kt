@@ -32,14 +32,9 @@ class CalculatorViewModel(private val processor: ExpressionProcessor) : ViewMode
             CalculatorAction.OnPercentClick -> handlePercent()
             CalculatorAction.OnSignToggleClick -> handleSignToggle()
             CalculatorAction.OnErrorDismiss -> handleErrorDismiss()
-            CalculatorAction.OnScientificToggle -> handleScientificToggle()
             CalculatorAction.OnDegRadToggle -> handleDegRadToggle()
             is CalculatorAction.OnScientificFunction -> handleScientificFunction(action.function)
         }
-    }
-
-    private fun handleScientificToggle() {
-        _state.update { it.copy(isScientific = !it.isScientific) }
     }
 
     private fun appendToExpression(value: String) {
