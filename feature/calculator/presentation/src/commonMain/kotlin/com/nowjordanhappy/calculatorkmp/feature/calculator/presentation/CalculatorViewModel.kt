@@ -40,10 +40,7 @@ class CalculatorViewModel(private val calculatorUtils: CalculatorUtils) : ViewMo
     }
 
     private fun handleScienficToggle() {
-        // viewModelScope.launch {
-        // delay(200L)
         _state.update { it.copy(isScientific = !it.isScientific) }
-        // }
     }
 
     private fun appendToExpression(value: String) {
@@ -59,36 +56,39 @@ class CalculatorViewModel(private val calculatorUtils: CalculatorUtils) : ViewMo
                 current == "0" && value == "0" -> current
                 current.isNotEmpty() &&
                     current.last().toString() in
-                        listOf(
-                            Constants.OPERATOR_MULTI,
-                            Constants.OPERATOR_DIV,
-                            Constants.OPERATOR_SUM,
-                            Constants.OPERATOR_SUB,
-                            Constants.OPERATOR_POWER,
-                        ) &&
+                    listOf(
+                        Constants.OPERATOR_MULTI,
+                        Constants.OPERATOR_DIV,
+                        Constants.OPERATOR_SUM,
+                        Constants.OPERATOR_SUB,
+                        Constants.OPERATOR_POWER,
+                    ) &&
                     value == "0" -> current + value
+
                 current.length >= 2 &&
                     current.last().toString() == "0" &&
                     current[current.length - 2].toString() in
-                        listOf(
-                            Constants.OPERATOR_MULTI,
-                            Constants.OPERATOR_DIV,
-                            Constants.OPERATOR_SUM,
-                            Constants.OPERATOR_SUB,
-                            Constants.OPERATOR_POWER,
-                        ) &&
+                    listOf(
+                        Constants.OPERATOR_MULTI,
+                        Constants.OPERATOR_DIV,
+                        Constants.OPERATOR_SUM,
+                        Constants.OPERATOR_SUB,
+                        Constants.OPERATOR_POWER,
+                    ) &&
                     value == "0" -> current
+
                 current.length >= 2 &&
                     current.last().toString() == "0" &&
                     current[current.length - 2].toString() in
-                        listOf(
-                            Constants.OPERATOR_MULTI,
-                            Constants.OPERATOR_DIV,
-                            Constants.OPERATOR_SUM,
-                            Constants.OPERATOR_SUB,
-                            Constants.OPERATOR_POWER,
-                        ) &&
+                    listOf(
+                        Constants.OPERATOR_MULTI,
+                        Constants.OPERATOR_DIV,
+                        Constants.OPERATOR_SUM,
+                        Constants.OPERATOR_SUB,
+                        Constants.OPERATOR_POWER,
+                    ) &&
                     value != "0" -> current.dropLast(1) + value
+
                 else -> current + value
             }
         val preview = calculatorUtils.checkOrResolve(newExpression, false, _state.value.isRad)
@@ -171,13 +171,16 @@ class CalculatorViewModel(private val calculatorUtils: CalculatorUtils) : ViewMo
                         _state.update {
                             it.copy(expression = formatResult(result.value), result = "", error = null, isAcMode = true)
                         }
+
                     is OperationResult.Error -> {
                         fsm.syncFromExpression(expr)
                         _state.update { it.copy(error = result.error, isAcMode = true) }
                     }
+
                     OperationResult.NoOp -> Unit
                 }
             }
+
             else -> Unit
         }
     }
@@ -277,6 +280,7 @@ class CalculatorViewModel(private val calculatorUtils: CalculatorUtils) : ViewMo
                     if (openCount <= 0) return
                     FSMAction.CloseParen to ")"
                 }
+
                 else -> return
             }
 
