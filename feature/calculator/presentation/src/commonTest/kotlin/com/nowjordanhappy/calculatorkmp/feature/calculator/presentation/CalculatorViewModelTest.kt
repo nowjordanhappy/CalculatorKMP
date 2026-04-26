@@ -1,7 +1,7 @@
 package com.nowjordanhappy.calculatorkmp.feature.calculator.presentation
 
-import com.nowjordanhappy.calculatorkmp.core.domain.CalculatorUtils
 import com.nowjordanhappy.calculatorkmp.core.domain.Constants
+import com.nowjordanhappy.calculatorkmp.core.domain.ExpressionProcessor
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -14,7 +14,7 @@ class CalculatorViewModelTest {
 
     @BeforeTest
     fun setup() {
-        viewModel = CalculatorViewModel(CalculatorUtils())
+        viewModel = CalculatorViewModel(ExpressionProcessor())
     }
 
     // Number input

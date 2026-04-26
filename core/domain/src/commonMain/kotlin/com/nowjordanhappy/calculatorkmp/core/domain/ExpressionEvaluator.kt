@@ -1,12 +1,12 @@
 package com.nowjordanhappy.calculatorkmp.core.domain
 
-object Operations {
-    fun tryResolve(
+object ExpressionEvaluator {
+    fun evaluate(
         operationRef: String,
-        isFromResolve: Boolean,
+        isFinal: Boolean,
         isRad: Boolean = true,
-    ): OperationResult {
-        if (operationRef.isEmpty()) return OperationResult.NoOp
+    ): EvaluationResult {
+        if (operationRef.isEmpty()) return EvaluationResult.NoOp
 
         var operation = operationRef
         if (operation.endsWith(Constants.POINT)) {
@@ -21,33 +21,33 @@ object Operations {
                 lastChar == Constants.OPERATOR_SUB ||
                 lastChar == Constants.OPERATOR_POWER
         if (endsWithOperator) {
-            return if (isFromResolve) {
-                OperationResult.Error(CalculatorError.MATH_ERROR, true)
+            return if (isFinal) {
+                EvaluationResult.Error(CalculatorError.MATH_ERROR)
             } else {
-                OperationResult.NoOp
+                EvaluationResult.NoOp
             }
         }
 
-        if (isFromResolve) {
+        if (isFinal) {
             operation = autoBalanceParens(operation)
         }
 
-        if (!hasOperations(operation)) return OperationResult.NoOp
+        if (!hasOperations(operation)) return EvaluationResult.NoOp
 
         return try {
             val result = ExpressionParser.evaluate(operation, isRad)
-            OperationResult.Success(result, isFromResolve)
+            EvaluationResult.Success(result)
         } catch (e: ArithmeticException) {
-            if (isFromResolve) {
-                OperationResult.Error(CalculatorError.UNDEFINED, true)
+            if (isFinal) {
+                EvaluationResult.Error(CalculatorError.UNDEFINED)
             } else {
-                OperationResult.NoOp
+                EvaluationResult.NoOp
             }
         } catch (e: IllegalArgumentException) {
-            if (isFromResolve) {
-                OperationResult.Error(CalculatorError.MATH_ERROR, true)
+            if (isFinal) {
+                EvaluationResult.Error(CalculatorError.MATH_ERROR)
             } else {
-                OperationResult.NoOp
+                EvaluationResult.NoOp
             }
         }
     }
@@ -61,17 +61,6 @@ object Operations {
             }
         }
         return if (open > 0) expression + ")".repeat(open) else expression
-    }
-
-    fun canReplaceOperator(charSequence: String): Boolean {
-        if (charSequence.length < 2) return false
-        val last = charSequence[charSequence.length - 1].toString()
-        val prev = charSequence[charSequence.length - 2].toString()
-        return (last == Constants.OPERATOR_MULTI || last == Constants.OPERATOR_DIV || last == Constants.OPERATOR_SUM) &&
-            (prev == Constants.OPERATOR_MULTI ||
-                prev == Constants.OPERATOR_DIV ||
-                prev == Constants.OPERATOR_SUM ||
-                prev == Constants.OPERATOR_SUB)
     }
 
     fun lastNumberSegment(expression: String): String {
@@ -114,7 +103,6 @@ object Operations {
             )
         if (expression.any { it.toString() in binaryOps }) return true
         if (expression.any { it.isLetter() || it == 'π' }) return true
-        // '-' at position > 0 and not right after another operator = binary minus
         for (i in 1 until expression.length) {
             if (expression[i] == '-') {
                 val prev = expression[i - 1].toString()

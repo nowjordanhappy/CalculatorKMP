@@ -2,10 +2,10 @@ package com.nowjordanhappy.calculatorkmp.feature.calculator.presentation
 
 import androidx.lifecycle.ViewModel
 import com.nowjordanhappy.calculatorkmp.core.domain.CalculatorError
-import com.nowjordanhappy.calculatorkmp.core.domain.CalculatorUtils
 import com.nowjordanhappy.calculatorkmp.core.domain.Constants
-import com.nowjordanhappy.calculatorkmp.core.domain.OperationResult
-import com.nowjordanhappy.calculatorkmp.core.domain.Operations
+import com.nowjordanhappy.calculatorkmp.core.domain.EvaluationResult
+import com.nowjordanhappy.calculatorkmp.core.domain.ExpressionEvaluator
+import com.nowjordanhappy.calculatorkmp.core.domain.ExpressionProcessor
 import com.nowjordanhappy.calculatorkmp.core.domain.fsm.CalculatorFSM
 import com.nowjordanhappy.calculatorkmp.core.domain.fsm.FSMAction
 import com.nowjordanhappy.calculatorkmp.core.domain.fsm.FSMState
@@ -17,7 +17,7 @@ import kotlinx.coroutines.flow.update
 
 private val FUNCTION_PREFIXES = listOf("asin(", "acos(", "atan(", "sqrt(", "sin(", "cos(", "tan(", "log(", "ln(")
 
-class CalculatorViewModel(private val calculatorUtils: CalculatorUtils) : ViewModel() {
+class CalculatorViewModel(private val processor: ExpressionProcessor) : ViewModel() {
     private val fsm = CalculatorFSM(ScientificStrategy())
     private val _state = MutableStateFlow(CalculatorState())
     val state = _state.asStateFlow()
@@ -33,13 +33,13 @@ class CalculatorViewModel(private val calculatorUtils: CalculatorUtils) : ViewMo
             CalculatorAction.OnPercentClick -> handlePercent()
             CalculatorAction.OnSignToggleClick -> handleSignToggle()
             CalculatorAction.OnErrorDismiss -> handleErrorDismiss()
-            CalculatorAction.OnScientificToggle -> handleScienficToggle()
+            CalculatorAction.OnScientificToggle -> handleScientificToggle()
             CalculatorAction.OnDegRadToggle -> handleDegRadToggle()
             is CalculatorAction.OnScientificFunction -> handleScientificFunction(action.function)
         }
     }
 
-    private fun handleScienficToggle() {
+    private fun handleScientificToggle() {
         _state.update { it.copy(isScientific = !it.isScientific) }
     }
 
@@ -90,11 +90,11 @@ class CalculatorViewModel(private val calculatorUtils: CalculatorUtils) : ViewMo
                     current + Constants.OPERATOR_MULTI + value
                 else -> current + value
             }
-        val preview = calculatorUtils.checkOrResolve(newExpression, false, _state.value.isRad)
+        val preview = processor.evaluate(newExpression, false, _state.value.isRad)
         _state.update { state ->
             state.copy(
                 expression = newExpression,
-                result = if (preview is OperationResult.Success) formatDisplay(preview.value) else state.result,
+                result = if (preview is EvaluationResult.Success) formatDisplay(preview.value) else state.result,
                 error = null,
                 isAcMode = false,
             )
@@ -130,7 +130,7 @@ class CalculatorViewModel(private val calculatorUtils: CalculatorUtils) : ViewMo
 
     private fun handlePoint() {
         if (_state.value.error != null) return
-        if (!calculatorUtils.addPoint(_state.value.expression)) return
+        if (!processor.addPoint(_state.value.expression)) return
         if (fsm.process(FSMAction.Point) is FSMTransition.Block) return
         val base = if (_state.value.expression.isEmpty()) "0" else _state.value.expression
         _state.update { it.copy(expression = base + Constants.POINT, error = null, isAcMode = false) }
@@ -165,16 +165,16 @@ class CalculatorViewModel(private val calculatorUtils: CalculatorUtils) : ViewMo
                     _state.update { it.copy(expression = expr.dropLast(1), result = "", error = null, isAcMode = true) }
                     return
                 }
-                when (val result = calculatorUtils.checkOrResolve(expr, true, _state.value.isRad)) {
-                    is OperationResult.Success ->
+                when (val result = processor.evaluate(expr, true, _state.value.isRad)) {
+                    is EvaluationResult.Success ->
                         _state.update {
                             it.copy(expression = formatResult(result.value), result = "", error = null, isAcMode = true)
                         }
-                    is OperationResult.Error -> {
+                    is EvaluationResult.Error -> {
                         fsm.syncFromExpression(expr)
                         _state.update { it.copy(error = result.error, isAcMode = true) }
                     }
-                    OperationResult.NoOp -> Unit
+                    EvaluationResult.NoOp -> Unit
                 }
             }
             else -> Unit
@@ -185,7 +185,7 @@ class CalculatorViewModel(private val calculatorUtils: CalculatorUtils) : ViewMo
         if (_state.value.error != null) return
         if (fsm.process(FSMAction.Percent) is FSMTransition.Block) return
         val expr = _state.value.expression
-        val last = Operations.lastNumberSegment(expr)
+        val last = ExpressionEvaluator.lastNumberSegment(expr)
         val value = last.toDoubleOrNull() ?: return
         val prefix = expr.dropLast(last.length)
         val newLast =
@@ -194,8 +194,8 @@ class CalculatorViewModel(private val calculatorUtils: CalculatorUtils) : ViewMo
                 if (lastOp == Constants.OPERATOR_SUM || lastOp == Constants.OPERATOR_SUB) {
                     val baseExpr = prefix.dropLast(1)
                     val baseValue =
-                        when (val r = calculatorUtils.checkOrResolve(baseExpr, false, _state.value.isRad)) {
-                            is OperationResult.Success -> r.value
+                        when (val r = processor.evaluate(baseExpr, false, _state.value.isRad)) {
+                            is EvaluationResult.Success -> r.value
                             else -> baseExpr.toDoubleOrNull()
                         }
                     if (baseValue != null) formatResult(baseValue * value / 100) else formatResult(value / 100)
@@ -213,7 +213,7 @@ class CalculatorViewModel(private val calculatorUtils: CalculatorUtils) : ViewMo
         if (_state.value.error != null) return
         if (fsm.process(FSMAction.SignToggle) is FSMTransition.Block) return
         val expr = _state.value.expression
-        val last = Operations.lastNumberSegment(expr)
+        val last = ExpressionEvaluator.lastNumberSegment(expr)
         if (last.isEmpty()) return
         val newLast = if (last.startsWith("-")) last.drop(1) else "-$last"
         val newExpression = expr.dropLast(last.length) + newLast
@@ -223,11 +223,11 @@ class CalculatorViewModel(private val calculatorUtils: CalculatorUtils) : ViewMo
     private fun handleDegRadToggle() {
         val newIsRad = !_state.value.isRad
         val expr = _state.value.expression
-        val preview = calculatorUtils.checkOrResolve(expr, false, newIsRad)
+        val preview = processor.evaluate(expr, false, newIsRad)
         _state.update {
             it.copy(
                 isRad = newIsRad,
-                result = if (preview is OperationResult.Success) formatDisplay(preview.value) else it.result,
+                result = if (preview is EvaluationResult.Success) formatDisplay(preview.value) else it.result,
             )
         }
     }
@@ -238,11 +238,11 @@ class CalculatorViewModel(private val calculatorUtils: CalculatorUtils) : ViewMo
     }
 
     private fun updateExpressionWithPreview(newExpression: String) {
-        val preview = calculatorUtils.checkOrResolve(newExpression, false, _state.value.isRad)
+        val preview = processor.evaluate(newExpression, false, _state.value.isRad)
         _state.update {
             it.copy(
                 expression = newExpression,
-                result = if (preview is OperationResult.Success) formatDisplay(preview.value) else "",
+                result = if (preview is EvaluationResult.Success) formatDisplay(preview.value) else "",
                 error = null,
                 isAcMode = false,
             )
@@ -298,11 +298,11 @@ class CalculatorViewModel(private val calculatorUtils: CalculatorUtils) : ViewMo
         val prefix = if (implicitMultiply) Constants.OPERATOR_MULTI else ""
         val newExpression = current + prefix + fragment
 
-        val preview = calculatorUtils.checkOrResolve(newExpression, false, _state.value.isRad)
+        val preview = processor.evaluate(newExpression, false, _state.value.isRad)
         _state.update { state ->
             state.copy(
                 expression = newExpression,
-                result = if (preview is OperationResult.Success) formatDisplay(preview.value) else state.result,
+                result = if (preview is EvaluationResult.Success) formatDisplay(preview.value) else state.result,
                 error = null,
                 isAcMode = false,
             )

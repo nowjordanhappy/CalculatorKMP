@@ -1,7 +1,7 @@
 package com.nowjordanhappy.calculatorkmp.core.domain.fsm
 
 import com.nowjordanhappy.calculatorkmp.core.domain.Constants
-import com.nowjordanhappy.calculatorkmp.core.domain.Operations
+import com.nowjordanhappy.calculatorkmp.core.domain.ExpressionEvaluator
 
 class CalculatorFSM(private val strategy: CalculatorStrategy) {
     var state: FSMState = FSMState.Empty
@@ -45,7 +45,7 @@ class CalculatorFSM(private val strategy: CalculatorStrategy) {
                                 FSMState.OperatorEntered
                             }
                         }
-                        Operations.lastNumberSegment(expression) == expression -> FSMState.FirstOperand
+                        ExpressionEvaluator.lastNumberSegment(expression) == expression -> FSMState.FirstOperand
                         else -> FSMState.SecondOperand
                     }
                 }
