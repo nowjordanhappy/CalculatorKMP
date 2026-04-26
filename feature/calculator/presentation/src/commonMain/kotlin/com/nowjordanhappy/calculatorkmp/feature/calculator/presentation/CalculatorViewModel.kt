@@ -62,7 +62,11 @@ class CalculatorViewModel(private val processor: ExpressionProcessor) : ViewMode
     }
 
     private fun handleOperator(operator: String) {
-        if (_state.value.error != null) return
+        if (_state.value.error != null) {
+            fsm.reset()
+            _state.update { it.copy(expression = "", result = "", error = null, isAcMode = true) }
+            return
+        }
         val raw = _state.value.expression
         val current = if (raw.endsWith(Constants.POINT)) raw.dropLast(1) else raw
         if (operator == Constants.OPERATOR_SUB && current.endsWith(Constants.OPERATOR_SUB)) return
@@ -81,7 +85,12 @@ class CalculatorViewModel(private val processor: ExpressionProcessor) : ViewMode
     }
 
     private fun handlePoint() {
-        if (_state.value.error != null) return
+        val wasError = _state.value.error != null
+        if (wasError) {
+            fsm.syncFromExpression("0.")
+            _state.update { it.copy(expression = "0.", result = "", error = null, isAcMode = false) }
+            return
+        }
         if (!processor.addPoint(_state.value.expression)) return
         if (fsm.process(FSMAction.Point) is FSMTransition.Block) return
         val base = if (_state.value.expression.isEmpty()) "0" else _state.value.expression

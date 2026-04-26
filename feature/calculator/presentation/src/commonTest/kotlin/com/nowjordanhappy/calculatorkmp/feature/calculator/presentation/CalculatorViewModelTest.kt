@@ -655,14 +655,28 @@ class CalculatorViewModelTest {
     }
 
     @Test
-    fun onPointClick_whileErrorShown_doesNothing() {
+    fun onPointClick_whileErrorShown_clearsErrorAndStarts0Point() {
         viewModel.onAction(CalculatorAction.OnNumberClick("5"))
         viewModel.onAction(CalculatorAction.OnOperatorClick(Constants.OPERATOR_DIV))
         viewModel.onAction(CalculatorAction.OnNumberClick("0"))
         viewModel.onAction(CalculatorAction.OnResolveClick)
         assertTrue(viewModel.state.value.error != null)
         viewModel.onAction(CalculatorAction.OnPointClick)
+        assertNull(viewModel.state.value.error)
+        assertEquals("0.", viewModel.state.value.expression)
+    }
+
+    @Test
+    fun onOperatorClick_whileErrorShown_clearsError() {
+        viewModel.onAction(CalculatorAction.OnNumberClick("5"))
+        viewModel.onAction(CalculatorAction.OnOperatorClick(Constants.OPERATOR_DIV))
+        viewModel.onAction(CalculatorAction.OnNumberClick("0"))
+        viewModel.onAction(CalculatorAction.OnResolveClick)
         assertTrue(viewModel.state.value.error != null)
+        viewModel.onAction(CalculatorAction.OnOperatorClick("+"))
+        assertNull(viewModel.state.value.error)
+        assertEquals("", viewModel.state.value.expression)
+        assertTrue(viewModel.state.value.isAcMode)
     }
 
     @Test
