@@ -8,4 +8,6 @@ object Constants {
     const val OPERATOR_POWER = "^"
     const val OPERATOR_NULL = "null"
     const val POINT = "."
+
+    val BINARY_OPERATORS = setOf(OPERATOR_MULTI, OPERATOR_DIV, OPERATOR_SUM, OPERATOR_SUB, OPERATOR_POWER)
 }

@@ -50,46 +50,7 @@ class CalculatorViewModel(private val processor: ExpressionProcessor) : ViewMode
         if (fsm.process(FSMAction.Digit(value)) is FSMTransition.Block) return
 
         val current = if (wasResult || wasError) "" else _state.value.expression
-        val newExpression =
-            when {
-                current == "0" && value != "0" -> value
-                current == "0" && value == "0" -> current
-                current.isNotEmpty() &&
-                    current.last().toString() in
-                        listOf(
-                            Constants.OPERATOR_MULTI,
-                            Constants.OPERATOR_DIV,
-                            Constants.OPERATOR_SUM,
-                            Constants.OPERATOR_SUB,
-                            Constants.OPERATOR_POWER,
-                        ) &&
-                    value == "0" -> current + value
-                current.length >= 2 &&
-                    current.last().toString() == "0" &&
-                    current[current.length - 2].toString() in
-                        listOf(
-                            Constants.OPERATOR_MULTI,
-                            Constants.OPERATOR_DIV,
-                            Constants.OPERATOR_SUM,
-                            Constants.OPERATOR_SUB,
-                            Constants.OPERATOR_POWER,
-                        ) &&
-                    value == "0" -> current
-                current.length >= 2 &&
-                    current.last().toString() == "0" &&
-                    current[current.length - 2].toString() in
-                        listOf(
-                            Constants.OPERATOR_MULTI,
-                            Constants.OPERATOR_DIV,
-                            Constants.OPERATOR_SUM,
-                            Constants.OPERATOR_SUB,
-                            Constants.OPERATOR_POWER,
-                        ) &&
-                    value != "0" -> current.dropLast(1) + value
-                current.isNotEmpty() && (current.last() == ')' || current.last() == 'π' || current.last() == 'e') ->
-                    current + Constants.OPERATOR_MULTI + value
-                else -> current + value
-            }
+        val newExpression = processor.appendDigit(current, value)
         val preview = processor.evaluate(newExpression, false, _state.value.isRad)
         _state.update { state ->
             state.copy(
@@ -110,15 +71,7 @@ class CalculatorViewModel(private val processor: ExpressionProcessor) : ViewMode
         if (fsm.process(FSMAction.Operator(operator)) is FSMTransition.Block) return
 
         val lastChar = current.lastOrNull()?.toString()
-        val endsWithOp =
-            lastChar in
-                listOf(
-                    Constants.OPERATOR_MULTI,
-                    Constants.OPERATOR_DIV,
-                    Constants.OPERATOR_SUM,
-                    Constants.OPERATOR_SUB,
-                    Constants.OPERATOR_POWER,
-                )
+        val endsWithOp = lastChar in Constants.BINARY_OPERATORS
         val newExpression =
             if (endsWithOp && operator != Constants.OPERATOR_SUB) {
                 current.dropLast(1) + operator
@@ -286,7 +239,7 @@ class CalculatorViewModel(private val processor: ExpressionProcessor) : ViewMode
             when (fsmAction) {
                 FSMAction.Function,
                 FSMAction.OpenParen,
-                FSMAction.Constant, -> needsImplicitMultiply(current)
+                FSMAction.Constant, -> processor.needsImplicitMultiply(current)
                 else -> false
             }
 
@@ -307,12 +260,6 @@ class CalculatorViewModel(private val processor: ExpressionProcessor) : ViewMode
                 isAcMode = false,
             )
         }
-    }
-
-    private fun needsImplicitMultiply(expr: String): Boolean {
-        if (expr.isEmpty()) return false
-        val last = expr.last()
-        return last.isDigit() || last == '.' || last == ')' || last == 'π' || last == 'e'
     }
 
     internal fun formatDisplay(value: Double): String {
