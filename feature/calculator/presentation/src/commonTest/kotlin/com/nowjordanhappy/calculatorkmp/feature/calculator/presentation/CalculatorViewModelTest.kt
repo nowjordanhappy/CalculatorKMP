@@ -690,48 +690,6 @@ class CalculatorViewModelTest {
         assertTrue(viewModel.state.value.error != null)
     }
 
-    // formatDisplay — scientific notation threshold
-
-    @Test
-    fun formatDisplay_largeNumber_usesScientificNotation() {
-        assertEquals("1E10", viewModel.formatDisplay(1e10))
-    }
-
-    @Test
-    fun formatDisplay_belowThreshold_usesPlain() {
-        assertEquals("9999999999", viewModel.formatDisplay(9_999_999_999.0))
-    }
-
-    @Test
-    fun formatDisplay_smallNumber_usesScientificNotation() {
-        assertEquals("1E-7", viewModel.formatDisplay(1e-7))
-    }
-
-    @Test
-    fun formatDisplay_aboveSmallThreshold_usesPlain() {
-        assertEquals("0.000001", viewModel.formatDisplay(1e-6))
-    }
-
-    @Test
-    fun formatDisplay_negative_largeNumber_usesScientificNotation() {
-        assertEquals("-1E10", viewModel.formatDisplay(-1e10))
-    }
-
-    @Test
-    fun formatDisplay_zero_usesPlain() {
-        assertEquals("0", viewModel.formatDisplay(0.0))
-    }
-
-    @Test
-    fun formatDisplay_decimal_usesPlain() {
-        assertEquals("1.5", viewModel.formatDisplay(1.5))
-    }
-
-    @Test
-    fun formatDisplay_mantissaTrimsTrailingZeros() {
-        assertEquals("1.5E10", viewModel.formatDisplay(1.5e10))
-    }
-
     // Implicit multiplication
 
     @Test

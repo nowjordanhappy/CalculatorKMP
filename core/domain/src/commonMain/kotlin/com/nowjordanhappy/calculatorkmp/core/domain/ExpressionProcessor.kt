@@ -68,6 +68,18 @@ class ExpressionProcessor(private val evaluator: ExpressionEvaluator = Expressio
         return expression.dropLast(last.length) + newLast
     }
 
+    fun formatDisplay(value: Double): String {
+        val abs = kotlin.math.abs(value)
+        if (abs == 0.0 || (abs >= 1e-6 && abs < 1e10)) return formatResult(value)
+        val str = value.toString()
+        val eIdx = str.indexOfFirst { it == 'E' || it == 'e' }
+        if (eIdx == -1) return formatResult(value)
+        val neg = str.startsWith("-")
+        val mantissa = str.substring(if (neg) 1 else 0, eIdx).trimEnd('0').trimEnd('.')
+        val exp = str.substring(eIdx + 1).toInt()
+        return "${if (neg) "-" else ""}${mantissa}E${exp}"
+    }
+
     fun formatResult(value: Double): String {
         if (value == value.toLong().toDouble()) return value.toLong().toString()
         val str = value.toString()

@@ -250,15 +250,5 @@ class CalculatorViewModel(private val processor: ExpressionProcessor) : ViewMode
         }
     }
 
-    internal fun formatDisplay(value: Double): String {
-        val abs = kotlin.math.abs(value)
-        if (abs == 0.0 || (abs >= 1e-6 && abs < 1e10)) return processor.formatResult(value)
-        val str = value.toString()
-        val eIdx = str.indexOfFirst { it == 'E' || it == 'e' }
-        if (eIdx == -1) return processor.formatResult(value)
-        val neg = str.startsWith("-")
-        val mantissa = str.substring(if (neg) 1 else 0, eIdx).trimEnd('0').trimEnd('.')
-        val exp = str.substring(eIdx + 1).toInt()
-        return "${if (neg) "-" else ""}${mantissa}E${exp}"
-    }
+    internal fun formatDisplay(value: Double): String = processor.formatDisplay(value)
 }

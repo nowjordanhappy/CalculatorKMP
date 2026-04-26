@@ -135,6 +135,48 @@ class ExpressionProcessorTest {
         assertFalse(processor.needsImplicitMultiply("sin("))
     }
 
+    // formatDisplay
+
+    @Test
+    fun formatDisplay_largeNumber_usesScientificNotation() {
+        assertEquals("1E10", processor.formatDisplay(1e10))
+    }
+
+    @Test
+    fun formatDisplay_belowThreshold_usesPlain() {
+        assertEquals("9999999999", processor.formatDisplay(9_999_999_999.0))
+    }
+
+    @Test
+    fun formatDisplay_smallNumber_usesScientificNotation() {
+        assertEquals("1E-7", processor.formatDisplay(1e-7))
+    }
+
+    @Test
+    fun formatDisplay_aboveSmallThreshold_usesPlain() {
+        assertEquals("0.000001", processor.formatDisplay(1e-6))
+    }
+
+    @Test
+    fun formatDisplay_negative_largeNumber_usesScientificNotation() {
+        assertEquals("-1E10", processor.formatDisplay(-1e10))
+    }
+
+    @Test
+    fun formatDisplay_zero_usesPlain() {
+        assertEquals("0", processor.formatDisplay(0.0))
+    }
+
+    @Test
+    fun formatDisplay_decimal_usesPlain() {
+        assertEquals("1.5", processor.formatDisplay(1.5))
+    }
+
+    @Test
+    fun formatDisplay_mantissaTrimsTrailingZeros() {
+        assertEquals("1.5E10", processor.formatDisplay(1.5e10))
+    }
+
     // formatResult
 
     @Test
