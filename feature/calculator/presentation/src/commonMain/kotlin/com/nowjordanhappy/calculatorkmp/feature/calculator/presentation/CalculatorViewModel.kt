@@ -94,7 +94,7 @@ class CalculatorViewModel(private val calculatorUtils: CalculatorUtils) : ViewMo
         _state.update { state ->
             state.copy(
                 expression = newExpression,
-                result = if (preview is OperationResult.Success) formatResult(preview.value) else state.result,
+                result = if (preview is OperationResult.Success) formatDisplay(preview.value) else state.result,
                 error = null,
                 isAcMode = false,
             )
@@ -227,7 +227,7 @@ class CalculatorViewModel(private val calculatorUtils: CalculatorUtils) : ViewMo
         _state.update {
             it.copy(
                 isRad = newIsRad,
-                result = if (preview is OperationResult.Success) formatResult(preview.value) else it.result,
+                result = if (preview is OperationResult.Success) formatDisplay(preview.value) else it.result,
             )
         }
     }
@@ -242,7 +242,7 @@ class CalculatorViewModel(private val calculatorUtils: CalculatorUtils) : ViewMo
         _state.update {
             it.copy(
                 expression = newExpression,
-                result = if (preview is OperationResult.Success) formatResult(preview.value) else "",
+                result = if (preview is OperationResult.Success) formatDisplay(preview.value) else "",
                 error = null,
                 isAcMode = false,
             )
@@ -302,7 +302,7 @@ class CalculatorViewModel(private val calculatorUtils: CalculatorUtils) : ViewMo
         _state.update { state ->
             state.copy(
                 expression = newExpression,
-                result = if (preview is OperationResult.Success) formatResult(preview.value) else state.result,
+                result = if (preview is OperationResult.Success) formatDisplay(preview.value) else state.result,
                 error = null,
                 isAcMode = false,
             )
@@ -313,6 +313,18 @@ class CalculatorViewModel(private val calculatorUtils: CalculatorUtils) : ViewMo
         if (expr.isEmpty()) return false
         val last = expr.last()
         return last.isDigit() || last == '.' || last == ')' || last == 'π' || last == 'e'
+    }
+
+    internal fun formatDisplay(value: Double): String {
+        val abs = kotlin.math.abs(value)
+        if (abs == 0.0 || (abs >= 1e-6 && abs < 1e10)) return formatResult(value)
+        val str = value.toString()
+        val eIdx = str.indexOfFirst { it == 'E' || it == 'e' }
+        if (eIdx == -1) return formatResult(value)
+        val neg = str.startsWith("-")
+        val mantissa = str.substring(if (neg) 1 else 0, eIdx).trimEnd('0').trimEnd('.')
+        val exp = str.substring(eIdx + 1).toInt()
+        return "${if (neg) "-" else ""}${mantissa}E${exp}"
     }
 
     internal fun formatResult(value: Double): String {
