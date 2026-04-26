@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import com.nowjordanhappy.calculatorkmp.core.domain.CalculatorError
 import com.nowjordanhappy.calculatorkmp.core.domain.Constants
 import com.nowjordanhappy.calculatorkmp.core.domain.EvaluationResult
-import com.nowjordanhappy.calculatorkmp.core.domain.ExpressionEvaluator
 import com.nowjordanhappy.calculatorkmp.core.domain.ExpressionProcessor
 import com.nowjordanhappy.calculatorkmp.core.domain.fsm.CalculatorFSM
 import com.nowjordanhappy.calculatorkmp.core.domain.fsm.FSMAction
@@ -121,7 +120,12 @@ class CalculatorViewModel(private val processor: ExpressionProcessor) : ViewMode
                 when (val result = processor.evaluate(expr, true, _state.value.isRad)) {
                     is EvaluationResult.Success ->
                         _state.update {
-                            it.copy(expression = formatResult(result.value), result = "", error = null, isAcMode = true)
+                            it.copy(
+                                expression = processor.formatResult(result.value),
+                                result = "",
+                                error = null,
+                                isAcMode = true,
+                            )
                         }
                     is EvaluationResult.Error -> {
                         fsm.syncFromExpression(expr)
@@ -137,39 +141,14 @@ class CalculatorViewModel(private val processor: ExpressionProcessor) : ViewMode
     internal fun handlePercent() {
         if (_state.value.error != null) return
         if (fsm.process(FSMAction.Percent) is FSMTransition.Block) return
-        val expr = _state.value.expression
-        val last = ExpressionEvaluator.lastNumberSegment(expr)
-        val value = last.toDoubleOrNull() ?: return
-        val prefix = expr.dropLast(last.length)
-        val newLast =
-            if (prefix.isNotEmpty()) {
-                val lastOp = prefix.last().toString()
-                if (lastOp == Constants.OPERATOR_SUM || lastOp == Constants.OPERATOR_SUB) {
-                    val baseExpr = prefix.dropLast(1)
-                    val baseValue =
-                        when (val r = processor.evaluate(baseExpr, false, _state.value.isRad)) {
-                            is EvaluationResult.Success -> r.value
-                            else -> baseExpr.toDoubleOrNull()
-                        }
-                    if (baseValue != null) formatResult(baseValue * value / 100) else formatResult(value / 100)
-                } else {
-                    formatResult(value / 100)
-                }
-            } else {
-                formatResult(value / 100)
-            }
-        val newExpression = prefix + newLast
+        val newExpression = processor.applyPercent(_state.value.expression, _state.value.isRad) ?: return
         updateExpressionWithPreview(newExpression)
     }
 
     internal fun handleSignToggle() {
         if (_state.value.error != null) return
         if (fsm.process(FSMAction.SignToggle) is FSMTransition.Block) return
-        val expr = _state.value.expression
-        val last = ExpressionEvaluator.lastNumberSegment(expr)
-        if (last.isEmpty()) return
-        val newLast = if (last.startsWith("-")) last.drop(1) else "-$last"
-        val newExpression = expr.dropLast(last.length) + newLast
+        val newExpression = processor.applySignToggle(_state.value.expression) ?: return
         updateExpressionWithPreview(newExpression)
     }
 
@@ -264,36 +243,13 @@ class CalculatorViewModel(private val processor: ExpressionProcessor) : ViewMode
 
     internal fun formatDisplay(value: Double): String {
         val abs = kotlin.math.abs(value)
-        if (abs == 0.0 || (abs >= 1e-6 && abs < 1e10)) return formatResult(value)
+        if (abs == 0.0 || (abs >= 1e-6 && abs < 1e10)) return processor.formatResult(value)
         val str = value.toString()
         val eIdx = str.indexOfFirst { it == 'E' || it == 'e' }
-        if (eIdx == -1) return formatResult(value)
+        if (eIdx == -1) return processor.formatResult(value)
         val neg = str.startsWith("-")
         val mantissa = str.substring(if (neg) 1 else 0, eIdx).trimEnd('0').trimEnd('.')
         val exp = str.substring(eIdx + 1).toInt()
         return "${if (neg) "-" else ""}${mantissa}E${exp}"
-    }
-
-    internal fun formatResult(value: Double): String {
-        if (value == value.toLong().toDouble()) return value.toLong().toString()
-        val str = value.toString()
-        return if ('E' in str || 'e' in str) plainString(str) else str.trimEnd('0').trimEnd('.')
-    }
-
-    private fun plainString(scientific: String): String {
-        val eIndex = scientific.indexOfFirst { it == 'E' || it == 'e' }
-        val negative = scientific.startsWith("-")
-        val base = scientific.substring(if (negative) 1 else 0, eIndex)
-        val exp = scientific.substring(eIndex + 1).toInt()
-        val digits = base.replace(".", "")
-        val dotPos = base.indexOf('.').let { if (it == -1) base.length else it }
-        val newDotPos = dotPos + exp
-        val plain =
-            when {
-                newDotPos <= 0 -> "0." + "0".repeat(-newDotPos) + digits
-                newDotPos >= digits.length -> digits + "0".repeat(newDotPos - digits.length)
-                else -> digits.substring(0, newDotPos) + "." + digits.substring(newDotPos)
-            }
-        return ((if (negative) "-" else "") + plain).trimEnd('0').trimEnd('.')
     }
 }

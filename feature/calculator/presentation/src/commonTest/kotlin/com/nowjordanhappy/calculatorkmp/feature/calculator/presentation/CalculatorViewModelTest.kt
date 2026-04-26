@@ -676,26 +676,6 @@ class CalculatorViewModelTest {
         assertTrue(viewModel.state.value.error != null)
     }
 
-    // formatResult — no scientific notation
-
-    @Test
-    fun formatResult_smallDecimal_noScientificNotation() {
-        val result = viewModel.formatResult(0.000005)
-        assertEquals("0.000005", result)
-    }
-
-    @Test
-    fun formatResult_integer_noDecimalPoint() {
-        val result = viewModel.formatResult(10.0)
-        assertEquals("10", result)
-    }
-
-    @Test
-    fun formatResult_decimal_stripsTrailingZeros() {
-        val result = viewModel.formatResult(3.50)
-        assertEquals("3.5", result)
-    }
-
     // formatDisplay — scientific notation threshold
 
     @Test

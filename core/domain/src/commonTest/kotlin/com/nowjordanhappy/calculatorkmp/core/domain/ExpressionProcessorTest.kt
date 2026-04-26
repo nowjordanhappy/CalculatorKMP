@@ -4,6 +4,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertIs
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class ExpressionProcessorTest {
@@ -132,5 +133,76 @@ class ExpressionProcessorTest {
     @Test
     fun needsImplicitMultiply_endsWithOpenParen_returnsFalse() {
         assertFalse(processor.needsImplicitMultiply("sin("))
+    }
+
+    // formatResult
+
+    @Test
+    fun formatResult_integer_noDecimalPoint() {
+        assertEquals("10", processor.formatResult(10.0))
+    }
+
+    @Test
+    fun formatResult_decimal_stripsTrailingZeros() {
+        assertEquals("3.5", processor.formatResult(3.50))
+    }
+
+    @Test
+    fun formatResult_smallDecimal_noScientificNotation() {
+        assertEquals("0.000005", processor.formatResult(0.000005))
+    }
+
+    @Test
+    fun formatResult_largeWhole_noDecimalPoint() {
+        assertEquals("1000000000", processor.formatResult(1_000_000_000.0))
+    }
+
+    // applyPercent
+
+    @Test
+    fun applyPercent_singleNumber_dividesBy100() {
+        assertEquals("0.5", processor.applyPercent("50", true))
+    }
+
+    @Test
+    fun applyPercent_afterAdd_percentOfBase() {
+        assertEquals("100+10", processor.applyPercent("100+10", true))
+    }
+
+    @Test
+    fun applyPercent_afterMultiply_dividesBy100() {
+        assertEquals("5x0.1", processor.applyPercent("5x10", true))
+    }
+
+    @Test
+    fun applyPercent_nonNumericLastSegment_returnsNull() {
+        assertNull(processor.applyPercent("5+", true))
+    }
+
+    // applySignToggle
+
+    @Test
+    fun applySignToggle_positive_becomesNegative() {
+        assertEquals("-5", processor.applySignToggle("5"))
+    }
+
+    @Test
+    fun applySignToggle_negative_becomesPositive() {
+        assertEquals("5", processor.applySignToggle("-5"))
+    }
+
+    @Test
+    fun applySignToggle_afterOperator_togglesSecondOperand() {
+        assertEquals("5+-3", processor.applySignToggle("5+3"))
+    }
+
+    @Test
+    fun applySignToggle_afterOperatorNegative_removesSign() {
+        assertEquals("5+3", processor.applySignToggle("5+-3"))
+    }
+
+    @Test
+    fun applySignToggle_emptyExpression_returnsNull() {
+        assertNull(processor.applySignToggle(""))
     }
 }
