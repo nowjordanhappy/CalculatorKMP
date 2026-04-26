@@ -24,40 +24,42 @@ fun CalculatorDisplay(
     expression: String,
     result: String,
     error: CalculatorError?,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 8.dp),
+        modifier = modifier.fillMaxWidth().padding(horizontal = 8.dp),
         verticalArrangement = Arrangement.Bottom,
-        horizontalAlignment = Alignment.End
+        horizontalAlignment = Alignment.End,
     ) {
         if (error != null) {
             Text(
-                text = when (error) {
-                    CalculatorError.INCORRECT_NUMBER -> "Incorrect number"
-                    CalculatorError.INCORRECT_EXPRESSION -> "Incorrect expression"
-                },
+                text =
+                    when (error) {
+                        CalculatorError.UNDEFINED -> "Undefined"
+                        CalculatorError.MATH_ERROR -> "Math Error"
+                    },
+                fontSize = 64.sp,
+                fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.error,
-                fontSize = 14.sp,
                 textAlign = TextAlign.End,
-                modifier = Modifier.fillMaxWidth()
+                maxLines = 1,
+                modifier = Modifier.fillMaxWidth(),
             )
+            return@Column
         }
         if (result.isNotEmpty()) {
             val exprScrollState = rememberScrollState()
             LaunchedEffect(expression) { exprScrollState.animateScrollTo(exprScrollState.maxValue) }
             Row(
                 modifier = Modifier.fillMaxWidth().horizontalScroll(exprScrollState),
-                horizontalArrangement = Arrangement.End
+                horizontalArrangement = Arrangement.End,
             ) {
                 Text(
                     text = expression,
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Light,
                     color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
-                    softWrap = false
+                    softWrap = false,
                 )
             }
             Text(
@@ -67,30 +69,31 @@ fun CalculatorDisplay(
                 color = MaterialTheme.colorScheme.onBackground,
                 textAlign = TextAlign.End,
                 maxLines = 1,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             )
         } else {
             val exprScrollState = rememberScrollState()
             LaunchedEffect(expression) { exprScrollState.animateScrollTo(exprScrollState.maxValue) }
             Row(
                 modifier = Modifier.fillMaxWidth().horizontalScroll(exprScrollState),
-                horizontalArrangement = Arrangement.End
+                horizontalArrangement = Arrangement.End,
             ) {
                 Text(
                     text = expression.ifEmpty { "0" },
                     fontSize = adaptiveFontSize(expression.length),
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onBackground,
-                    softWrap = false
+                    softWrap = false,
                 )
             }
         }
     }
 }
 
-fun adaptiveFontSize(length: Int) = when {
-    length > 12 -> 32.sp
-    length > 9  -> 44.sp
-    length > 6  -> 54.sp
-    else        -> 64.sp
-}
+fun adaptiveFontSize(length: Int) =
+    when {
+        length > 12 -> 32.sp
+        length > 9 -> 44.sp
+        length > 6 -> 54.sp
+        else -> 64.sp
+    }

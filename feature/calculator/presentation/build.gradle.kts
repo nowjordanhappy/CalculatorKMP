@@ -1,8 +1,6 @@
 import org.gradle.api.artifacts.VersionCatalogsExtension
 
-plugins {
-    alias(libs.plugins.convention.cmp.feature)
-}
+plugins { alias(libs.plugins.convention.cmp.feature) }
 
 val catalog = extensions.getByType<VersionCatalogsExtension>().named("libs")
 val lifecycleViewModel = catalog.findLibrary("lifecycle-viewmodel").get()
@@ -26,12 +24,8 @@ kotlin {
             implementation(koinCompose)
             implementation(koinViewModel)
         }
-        commonTest.dependencies {
-            implementation(kotlin("test"))
-        }
+        commonTest.dependencies { implementation(kotlin("test")) }
     }
 }
 
-android {
-    namespace = "com.nowjordanhappy.calculatorkmp.feature.calculator.presentation"
-}
+android { namespace = "com.nowjordanhappy.calculatorkmp.feature.calculator.presentation" }

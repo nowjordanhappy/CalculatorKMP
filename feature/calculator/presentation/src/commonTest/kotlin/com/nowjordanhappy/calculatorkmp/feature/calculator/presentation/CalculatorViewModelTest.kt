@@ -1,14 +1,15 @@
 package com.nowjordanhappy.calculatorkmp.feature.calculator.presentation
 
 import com.nowjordanhappy.calculatorkmp.core.domain.CalculatorUtils
+import com.nowjordanhappy.calculatorkmp.core.domain.Constants
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class CalculatorViewModelTest {
-
     private lateinit var viewModel: CalculatorViewModel
 
     @BeforeTest
@@ -119,11 +120,12 @@ class CalculatorViewModelTest {
     }
 
     @Test
-    fun onResolveClick_incompleteExpression_setsError() {
+    fun onResolveClick_trailingOperator_doesNothing() {
         viewModel.onAction(CalculatorAction.OnNumberClick("5"))
         viewModel.onAction(CalculatorAction.OnOperatorClick("+"))
         viewModel.onAction(CalculatorAction.OnResolveClick)
-        assertTrue(viewModel.state.value.error != null)
+        assertEquals("5+", viewModel.state.value.expression)
+        assertEquals(null, viewModel.state.value.error)
     }
 
     // Point
@@ -133,6 +135,45 @@ class CalculatorViewModelTest {
         viewModel.onAction(CalculatorAction.OnNumberClick("3"))
         viewModel.onAction(CalculatorAction.OnPointClick)
         assertEquals("3.", viewModel.state.value.expression)
+    }
+
+    @Test
+    fun onPointClick_emptyExpression_produces0Point() {
+        viewModel.onAction(CalculatorAction.OnPointClick)
+        assertEquals("0.", viewModel.state.value.expression)
+    }
+
+    @Test
+    fun onPointClick_emptyThenDigit_produces0PointDigit() {
+        viewModel.onAction(CalculatorAction.OnPointClick)
+        viewModel.onAction(CalculatorAction.OnNumberClick("2"))
+        assertEquals("0.2", viewModel.state.value.expression)
+    }
+
+    @Test
+    fun onPointClick_trailingDot_thenOperator_stripsAndAddsOperator() {
+        viewModel.onAction(CalculatorAction.OnNumberClick("5"))
+        viewModel.onAction(CalculatorAction.OnPointClick)
+        viewModel.onAction(CalculatorAction.OnOperatorClick("x"))
+        assertEquals("5x", viewModel.state.value.expression)
+    }
+
+    @Test
+    fun onPointClick_trailingDot_thenMultiply_resolvesCorrectly() {
+        viewModel.onAction(CalculatorAction.OnNumberClick("5"))
+        viewModel.onAction(CalculatorAction.OnPointClick)
+        viewModel.onAction(CalculatorAction.OnOperatorClick("x"))
+        viewModel.onAction(CalculatorAction.OnNumberClick("5"))
+        viewModel.onAction(CalculatorAction.OnResolveClick)
+        assertEquals("25", viewModel.state.value.expression)
+    }
+
+    @Test
+    fun onPointClick_trailingDot_thenResolve_stripsPoint() {
+        viewModel.onAction(CalculatorAction.OnNumberClick("5"))
+        viewModel.onAction(CalculatorAction.OnPointClick)
+        viewModel.onAction(CalculatorAction.OnResolveClick)
+        assertEquals("5", viewModel.state.value.expression)
     }
 
     @Test
@@ -390,13 +431,15 @@ class CalculatorViewModelTest {
     // Error state blocked by FSM
 
     @Test
-    fun onNumberClick_whileErrorShown_doesNothing() {
+    fun onNumberClick_whileErrorShown_startsFresh() {
         viewModel.onAction(CalculatorAction.OnNumberClick("5"))
-        viewModel.onAction(CalculatorAction.OnOperatorClick("+"))
+        viewModel.onAction(CalculatorAction.OnOperatorClick(Constants.OPERATOR_DIV))
+        viewModel.onAction(CalculatorAction.OnNumberClick("0"))
         viewModel.onAction(CalculatorAction.OnResolveClick)
-        val exprBeforeNumber = viewModel.state.value.expression
+        assertTrue(viewModel.state.value.error != null)
         viewModel.onAction(CalculatorAction.OnNumberClick("9"))
-        assertEquals(exprBeforeNumber, viewModel.state.value.expression)
+        assertEquals("9", viewModel.state.value.expression)
+        assertEquals(null, viewModel.state.value.error)
     }
 
     @Test
@@ -428,6 +471,209 @@ class CalculatorViewModelTest {
         viewModel.onAction(CalculatorAction.OnErrorDismiss)
         viewModel.onAction(CalculatorAction.OnNumberClick("3"))
         assertEquals("5+3", viewModel.state.value.expression)
+    }
+
+    // Smart delete — function prefix as unit
+
+    @Test
+    fun onDeleteClick_functionPrefix_deletesWholePrefix() {
+        viewModel.onAction(CalculatorAction.OnScientificFunction("sin"))
+        assertEquals("sin(", viewModel.state.value.expression)
+        viewModel.onAction(CalculatorAction.OnDeleteClick)
+        assertEquals("", viewModel.state.value.expression)
+    }
+
+    @Test
+    fun onDeleteClick_longFunctionPrefix_deletesWholePrefix() {
+        viewModel.onAction(CalculatorAction.OnScientificFunction("sin⁻¹"))
+        viewModel.onAction(CalculatorAction.OnDeleteClick)
+        assertEquals("", viewModel.state.value.expression)
+    }
+
+    @Test
+    fun onDeleteClick_functionWithArg_deletesArgCharByChar() {
+        viewModel.onAction(CalculatorAction.OnScientificFunction("sin"))
+        viewModel.onAction(CalculatorAction.OnNumberClick("3"))
+        viewModel.onAction(CalculatorAction.OnDeleteClick)
+        assertEquals("sin(", viewModel.state.value.expression)
+    }
+
+    @Test
+    fun onDeleteClick_nestedFunction_deletesInnerPrefix() {
+        viewModel.onAction(CalculatorAction.OnScientificFunction("sin"))
+        viewModel.onAction(CalculatorAction.OnScientificFunction("cos"))
+        viewModel.onAction(CalculatorAction.OnDeleteClick)
+        assertEquals("sin(", viewModel.state.value.expression)
+    }
+
+    @Test
+    fun onDeleteClick_standaloneParen_deletesJustParen() {
+        viewModel.onAction(CalculatorAction.OnNumberClick("3"))
+        viewModel.onAction(CalculatorAction.OnOperatorClick("+"))
+        viewModel.onAction(CalculatorAction.OnScientificFunction("("))
+        viewModel.onAction(CalculatorAction.OnDeleteClick)
+        assertEquals("3+", viewModel.state.value.expression)
+    }
+
+    // Close paren block
+
+    @Test
+    fun closeParen_noOpenParen_doesNothing() {
+        viewModel.onAction(CalculatorAction.OnNumberClick("5"))
+        viewModel.onAction(CalculatorAction.OnScientificFunction(")"))
+        assertEquals("5", viewModel.state.value.expression)
+    }
+
+    @Test
+    fun closeParen_withOpenParen_appends() {
+        viewModel.onAction(CalculatorAction.OnScientificFunction("sin"))
+        viewModel.onAction(CalculatorAction.OnNumberClick("3"))
+        viewModel.onAction(CalculatorAction.OnScientificFunction(")"))
+        assertEquals("sin(3)", viewModel.state.value.expression)
+    }
+
+    @Test
+    fun closeParen_allParensClosed_doesNothing() {
+        viewModel.onAction(CalculatorAction.OnScientificFunction("sin"))
+        viewModel.onAction(CalculatorAction.OnNumberClick("3"))
+        viewModel.onAction(CalculatorAction.OnScientificFunction(")"))
+        viewModel.onAction(CalculatorAction.OnScientificFunction(")"))
+        assertEquals("sin(3)", viewModel.state.value.expression)
+    }
+
+    // AC/C toggle
+
+    @Test
+    fun isAcMode_initialState_isTrue() {
+        assertTrue(viewModel.state.value.isAcMode)
+    }
+
+    @Test
+    fun isAcMode_afterDigit_isFalse() {
+        viewModel.onAction(CalculatorAction.OnNumberClick("5"))
+        assertFalse(viewModel.state.value.isAcMode)
+    }
+
+    @Test
+    fun isAcMode_afterResolve_isTrue() {
+        viewModel.onAction(CalculatorAction.OnNumberClick("2"))
+        viewModel.onAction(CalculatorAction.OnOperatorClick("+"))
+        viewModel.onAction(CalculatorAction.OnNumberClick("3"))
+        viewModel.onAction(CalculatorAction.OnResolveClick)
+        assertTrue(viewModel.state.value.isAcMode)
+    }
+
+    @Test
+    fun isAcMode_afterClear_isTrue() {
+        viewModel.onAction(CalculatorAction.OnNumberClick("5"))
+        viewModel.onAction(CalculatorAction.OnClearClick)
+        assertTrue(viewModel.state.value.isAcMode)
+    }
+
+    @Test
+    fun isAcMode_afterError_isTrue() {
+        viewModel.onAction(CalculatorAction.OnNumberClick("5"))
+        viewModel.onAction(CalculatorAction.OnOperatorClick(Constants.OPERATOR_DIV))
+        viewModel.onAction(CalculatorAction.OnNumberClick("0"))
+        viewModel.onAction(CalculatorAction.OnResolveClick)
+        assertTrue(viewModel.state.value.isAcMode)
+    }
+
+    @Test
+    fun isAcMode_afterDeleteToEmpty_isTrue() {
+        viewModel.onAction(CalculatorAction.OnNumberClick("5"))
+        viewModel.onAction(CalculatorAction.OnDeleteClick)
+        assertTrue(viewModel.state.value.isAcMode)
+    }
+
+    @Test
+    fun isAcMode_afterDeleteWithRemainingExpression_isFalse() {
+        viewModel.onAction(CalculatorAction.OnNumberClick("5"))
+        viewModel.onAction(CalculatorAction.OnNumberClick("3"))
+        viewModel.onAction(CalculatorAction.OnDeleteClick)
+        assertFalse(viewModel.state.value.isAcMode)
+    }
+
+    // Error state interaction — percent, sign toggle, scientific functions
+
+    @Test
+    fun onPercentClick_whileErrorShown_doesNothing() {
+        viewModel.onAction(CalculatorAction.OnNumberClick("5"))
+        viewModel.onAction(CalculatorAction.OnOperatorClick(Constants.OPERATOR_DIV))
+        viewModel.onAction(CalculatorAction.OnNumberClick("0"))
+        viewModel.onAction(CalculatorAction.OnResolveClick)
+        assertTrue(viewModel.state.value.error != null)
+        viewModel.onAction(CalculatorAction.OnPercentClick)
+        assertTrue(viewModel.state.value.error != null)
+    }
+
+    @Test
+    fun onSignToggleClick_whileErrorShown_doesNothing() {
+        viewModel.onAction(CalculatorAction.OnNumberClick("5"))
+        viewModel.onAction(CalculatorAction.OnOperatorClick(Constants.OPERATOR_DIV))
+        viewModel.onAction(CalculatorAction.OnNumberClick("0"))
+        viewModel.onAction(CalculatorAction.OnResolveClick)
+        assertTrue(viewModel.state.value.error != null)
+        viewModel.onAction(CalculatorAction.OnSignToggleClick)
+        assertTrue(viewModel.state.value.error != null)
+    }
+
+    @Test
+    fun onScientificFunction_whileErrorShown_startsFresh() {
+        viewModel.onAction(CalculatorAction.OnNumberClick("5"))
+        viewModel.onAction(CalculatorAction.OnOperatorClick(Constants.OPERATOR_DIV))
+        viewModel.onAction(CalculatorAction.OnNumberClick("0"))
+        viewModel.onAction(CalculatorAction.OnResolveClick)
+        assertTrue(viewModel.state.value.error != null)
+        viewModel.onAction(CalculatorAction.OnScientificFunction("sin"))
+        assertEquals("sin(", viewModel.state.value.expression)
+        assertNull(viewModel.state.value.error)
+    }
+
+    @Test
+    fun onScientificFunction_constant_whileErrorShown_startsFresh() {
+        viewModel.onAction(CalculatorAction.OnNumberClick("5"))
+        viewModel.onAction(CalculatorAction.OnOperatorClick(Constants.OPERATOR_DIV))
+        viewModel.onAction(CalculatorAction.OnNumberClick("0"))
+        viewModel.onAction(CalculatorAction.OnResolveClick)
+        assertTrue(viewModel.state.value.error != null)
+        viewModel.onAction(CalculatorAction.OnScientificFunction("π"))
+        assertEquals("π", viewModel.state.value.expression)
+        assertNull(viewModel.state.value.error)
+    }
+
+    @Test
+    fun onScientificFunction_closeParen_whileErrorShown_doesNothing() {
+        viewModel.onAction(CalculatorAction.OnNumberClick("5"))
+        viewModel.onAction(CalculatorAction.OnOperatorClick(Constants.OPERATOR_DIV))
+        viewModel.onAction(CalculatorAction.OnNumberClick("0"))
+        viewModel.onAction(CalculatorAction.OnResolveClick)
+        assertTrue(viewModel.state.value.error != null)
+        viewModel.onAction(CalculatorAction.OnScientificFunction(")"))
+        assertTrue(viewModel.state.value.error != null)
+        assertEquals("5÷0", viewModel.state.value.expression)
+    }
+
+    @Test
+    fun onPointClick_whileErrorShown_doesNothing() {
+        viewModel.onAction(CalculatorAction.OnNumberClick("5"))
+        viewModel.onAction(CalculatorAction.OnOperatorClick(Constants.OPERATOR_DIV))
+        viewModel.onAction(CalculatorAction.OnNumberClick("0"))
+        viewModel.onAction(CalculatorAction.OnResolveClick)
+        assertTrue(viewModel.state.value.error != null)
+        viewModel.onAction(CalculatorAction.OnPointClick)
+        assertTrue(viewModel.state.value.error != null)
+    }
+
+    @Test
+    fun onDeleteClick_whileErrorShown_doesNothing() {
+        viewModel.onAction(CalculatorAction.OnNumberClick("5"))
+        viewModel.onAction(CalculatorAction.OnOperatorClick(Constants.OPERATOR_DIV))
+        viewModel.onAction(CalculatorAction.OnNumberClick("0"))
+        viewModel.onAction(CalculatorAction.OnResolveClick)
+        assertTrue(viewModel.state.value.error != null)
+        viewModel.onAction(CalculatorAction.OnDeleteClick)
+        assertTrue(viewModel.state.value.error != null)
     }
 
     // formatResult — no scientific notation

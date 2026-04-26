@@ -16,11 +16,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import kotlinx.coroutines.delay
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.nowjordanhappy.calculatorkmp.feature.calculator.presentation.CalculatorAction
+import kotlinx.coroutines.delay
 
 @Composable
 fun ModeMenu(
@@ -28,7 +28,7 @@ fun ModeMenu(
     isRad: Boolean = false,
     showDegRad: Boolean = false,
     delayToggle: Boolean = false,
-    onAction: (CalculatorAction) -> Unit
+    onAction: (CalculatorAction) -> Unit,
 ) {
     var showMenu by remember { mutableStateOf(false) }
     var pendingToggle by remember { mutableStateOf(false) }
@@ -41,7 +41,7 @@ fun ModeMenu(
     }
     Row(
         modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
-        horizontalArrangement = Arrangement.End
+        horizontalArrangement = Arrangement.End,
     ) {
         Box {
             TextButton(onClick = { showMenu = true }) {
@@ -49,21 +49,21 @@ fun ModeMenu(
             }
             DropdownMenu(
                 expanded = showMenu,
-                onDismissRequest = { showMenu = false }
+                onDismissRequest = { showMenu = false },
             ) {
                 DropdownMenuItem(
                     text = { Text("Basic${if (!isScientific) " ✓" else ""}") },
                     onClick = {
                         if (isScientific) pendingToggle = true
                         showMenu = false
-                    }
+                    },
                 )
                 DropdownMenuItem(
                     text = { Text("Scientific${if (isScientific) " ✓" else ""}") },
                     onClick = {
                         if (!isScientific) pendingToggle = true
                         showMenu = false
-                    }
+                    },
                 )
                 if (showDegRad) {
                     DropdownMenuItem(
@@ -71,7 +71,7 @@ fun ModeMenu(
                         onClick = {
                             onAction(CalculatorAction.OnDegRadToggle)
                             showMenu = false
-                        }
+                        },
                     )
                 }
             }

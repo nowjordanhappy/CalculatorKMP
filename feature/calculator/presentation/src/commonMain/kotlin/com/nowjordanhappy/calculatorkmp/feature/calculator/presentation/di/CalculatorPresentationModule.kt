@@ -4,6 +4,4 @@ import com.nowjordanhappy.calculatorkmp.feature.calculator.presentation.Calculat
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
 
-val calculatorPresentationModule = module {
-    viewModelOf(::CalculatorViewModel)
-}
+val calculatorPresentationModule = module { viewModelOf(::CalculatorViewModel) }
