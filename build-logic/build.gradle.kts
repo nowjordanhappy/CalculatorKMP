@@ -1,6 +1,4 @@
-plugins {
-    `kotlin-dsl`
-}
+plugins { `kotlin-dsl` }
 
 dependencies {
     compileOnly(libs.plugins.android.application.toDep())
@@ -10,9 +8,7 @@ dependencies {
     compileOnly(libs.plugins.compose.compiler.toDep())
 }
 
-fun Provider<PluginDependency>.toDep() = map {
-    "${it.pluginId}:${it.pluginId}.gradle.plugin:${it.version}"
-}
+fun Provider<PluginDependency>.toDep() = map { "${it.pluginId}:${it.pluginId}.gradle.plugin:${it.version}" }
 
 gradlePlugin {
     plugins {

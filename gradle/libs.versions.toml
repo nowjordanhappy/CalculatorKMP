@@ -7,6 +7,7 @@ lifecycle = "2.9.1"
 navigation = "2.9.0-beta04"
 koin = "4.1.0"
 activity = "1.10.1"
+spotless = "6.25.0"
 minSdk = "24"
 compileSdk = "35"
 targetSdk = "35"
@@ -31,3 +32,4 @@ ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 convention-kmp-library = { id = "convention.kmp.library", version = "unspecified" }
 convention-cmp-feature = { id = "convention.cmp.feature", version = "unspecified" }
 convention-cmp-application = { id = "convention.cmp.application", version = "unspecified" }
+spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }

@@ -1,6 +1,5 @@
 package com.nowjordanhappy.calculatorkmp
 
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
@@ -40,15 +39,12 @@ fun main() {
     startKoin { modules(appModules) }
     application {
         val windowState = rememberWindowState(size = computeWindowSize(false))
-        Window(
-            onCloseRequest = ::exitApplication,
-            title = "CalculatorKMP",
-            state = windowState,
-            resizable = false
-        ) {
-            App(forceWide = true, layoutConfig = computeLayoutConfig(), onIsScientificChanged = { isScientific ->
-                windowState.size = computeWindowSize(isScientific)
-            })
+        Window(onCloseRequest = ::exitApplication, title = "CalculatorKMP", state = windowState, resizable = false) {
+            App(
+                forceWide = true,
+                layoutConfig = computeLayoutConfig(),
+                onIsScientificChanged = { isScientific -> windowState.size = computeWindowSize(isScientific) }
+            )
         }
     }
 }

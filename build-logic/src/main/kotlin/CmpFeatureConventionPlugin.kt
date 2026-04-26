@@ -5,32 +5,33 @@ import org.gradle.kotlin.dsl.configure
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 
 class CmpFeatureConventionPlugin : Plugin<Project> {
-    override fun apply(target: Project) = with(target) {
-        with(pluginManager) {
-            apply("org.jetbrains.kotlin.multiplatform")
-            apply("com.android.library")
-            apply("org.jetbrains.compose")
-            apply("org.jetbrains.kotlin.plugin.compose")
-        }
+    override fun apply(target: Project) =
+        with(target) {
+            with(pluginManager) {
+                apply("org.jetbrains.kotlin.multiplatform")
+                apply("com.android.library")
+                apply("org.jetbrains.compose")
+                apply("org.jetbrains.kotlin.plugin.compose")
+            }
 
-        extensions.configure<LibraryExtension> {
-            compileSdk = libs.findVersion("compileSdk").get().toString().toInt()
-            defaultConfig.minSdk = libs.findVersion("minSdk").get().toString().toInt()
-        }
+            extensions.configure<LibraryExtension> {
+                compileSdk = libs.findVersion("compileSdk").get().toString().toInt()
+                defaultConfig.minSdk = libs.findVersion("minSdk").get().toString().toInt()
+            }
 
-        extensions.configure<KotlinMultiplatformExtension> {
-            applyDefaultHierarchyTemplate()
-            androidTarget()
-            iosX64()
-            iosArm64()
-            iosSimulatorArm64()
-            jvm("desktop")
+            extensions.configure<KotlinMultiplatformExtension> {
+                applyDefaultHierarchyTemplate()
+                androidTarget()
+                iosX64()
+                iosArm64()
+                iosSimulatorArm64()
+                jvm("desktop")
 
-            compilerOptions {
-                freeCompilerArgs.add("-Xexpect-actual-classes")
-                freeCompilerArgs.add("-opt-in=kotlin.RequiresOptIn")
-                freeCompilerArgs.add("-opt-in=kotlin.time.ExperimentalTime")
+                compilerOptions {
+                    freeCompilerArgs.add("-Xexpect-actual-classes")
+                    freeCompilerArgs.add("-opt-in=kotlin.RequiresOptIn")
+                    freeCompilerArgs.add("-opt-in=kotlin.time.ExperimentalTime")
+                }
             }
         }
-    }
 }

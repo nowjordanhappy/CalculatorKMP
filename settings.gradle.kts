@@ -1,4 +1,5 @@
 rootProject.name = "CalculatorKMP"
+
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 pluginManagement {
@@ -18,5 +19,7 @@ dependencyResolutionManagement {
 }
 
 include(":composeApp")
+
 include(":core:domain")
+
 include(":feature:calculator:presentation")

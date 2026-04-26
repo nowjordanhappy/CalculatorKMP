@@ -7,11 +7,7 @@ plugins {
 
 kotlin {
     androidTarget()
-    listOf(
-        iosX64(),
-        iosArm64(),
-        iosSimulatorArm64()
-    ).forEach { iosTarget ->
+    listOf(iosX64(), iosArm64(), iosSimulatorArm64()).forEach { iosTarget ->
         iosTarget.binaries.framework {
             baseName = "ComposeApp"
             isStatic = true
@@ -19,9 +15,7 @@ kotlin {
     }
     jvm("desktop")
 
-    compilerOptions {
-        freeCompilerArgs.add("-Xexpect-actual-classes")
-    }
+    compilerOptions { freeCompilerArgs.add("-Xexpect-actual-classes") }
 
     sourceSets {
         commonMain.dependencies {
@@ -37,11 +31,7 @@ kotlin {
             implementation(libs.activity.compose)
             implementation(libs.koin.android)
         }
-        val desktopMain by getting {
-            dependencies {
-                implementation(compose.desktop.currentOs)
-            }
-        }
+        val desktopMain by getting { dependencies { implementation(compose.desktop.currentOs) } }
     }
 }
 
@@ -55,7 +45,5 @@ android {
         versionCode = 1
         versionName = "1.0.0"
     }
-    packaging {
-        resources.excludes += "/META-INF/{AL2.0,LGPL2.1}"
-    }
+    packaging { resources.excludes += "/META-INF/{AL2.0,LGPL2.1}" }
 }

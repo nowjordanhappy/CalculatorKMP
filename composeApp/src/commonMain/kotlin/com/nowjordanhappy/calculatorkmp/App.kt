@@ -5,11 +5,7 @@ import com.nowjordanhappy.calculatorkmp.feature.calculator.presentation.Calculat
 import com.nowjordanhappy.calculatorkmp.feature.calculator.presentation.LayoutConfig
 
 @Composable
-fun App(
-    onIsScientificChanged: (Boolean) -> Unit = {},
-    forceWide: Boolean = false,
-    layoutConfig: LayoutConfig? = null
-) {
+fun App(onIsScientificChanged: (Boolean) -> Unit = {}, forceWide: Boolean = false, layoutConfig: LayoutConfig? = null) {
     CalculatorTheme {
         CalculatorScreenRoot(
             onIsScientificChanged = onIsScientificChanged,
