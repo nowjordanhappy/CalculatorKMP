@@ -1,18 +1,20 @@
 package com.nowjordanhappy.calculatorkmp.feature.calculator.presentation.components
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.unit.sp
 import com.nowjordanhappy.calculatorkmp.feature.calculator.presentation.CalculatorAction
 import kotlinx.coroutines.delay
 
@@ -35,8 +37,8 @@ fun ModeMenu(
         }
     }
     Box {
-        TextButton(onClick = { showMenu = true }) {
-            Text("⋮", fontSize = 20.sp, color = MaterialTheme.colorScheme.onBackground)
+        IconButton(onClick = { showMenu = true }) {
+            Icon(Icons.Default.MoreVert, contentDescription = "Menu", tint = MaterialTheme.colorScheme.onBackground)
         }
         DropdownMenu(
             expanded = showMenu,
