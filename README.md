@@ -126,3 +126,7 @@ Open in Android Studio and run the `composeApp` configuration on an Android devi
 xcrun simctl list devices | grep Booted
 # Use the UDID to launch via Xcode or the provided shell script
 ```
+
+## License
+
+Licensed under the [Apache License 2.0](LICENSE).
