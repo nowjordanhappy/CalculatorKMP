@@ -42,11 +42,11 @@ android {
     namespace = "com.nowjordanhappy.calculatorkmp"
     compileSdk = libs.versions.compileSdk.get().toInt()
     defaultConfig {
-        applicationId = "com.nowjordanhappy.calculatorkmp"
+        applicationId = "com.nowjordanhappy.materialcalculator"
         minSdk = libs.versions.minSdk.get().toInt()
         targetSdk = libs.versions.targetSdk.get().toInt()
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = libs.versions.appVersionCode.get().toInt()
+        versionName = libs.versions.appVersionName.get()
     }
     packaging { resources.excludes += "/META-INF/{AL2.0,LGPL2.1}" }
 }

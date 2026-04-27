@@ -12,6 +12,8 @@ multiplatform-settings = "1.1.0"
 minSdk = "24"
 compileSdk = "35"
 targetSdk = "35"
+appVersionName = "2.0.0"
+appVersionCode = "15"
 
 [libraries]
 lifecycle-viewmodel = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycle" }
