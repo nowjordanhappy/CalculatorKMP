@@ -208,7 +208,7 @@ val strings = remember(locale) { getStrings(locale) }
 CompositionLocalProvider(LocalStrings provides strings) { ... }
 ```
 
-Components read strings via `LocalStrings.current`. To add a language: add a new `XxxStrings` val and one `when` branch in `getStrings()`.
+Components read strings via `LocalStrings.current`. Supported: EN, ES, FR, DE, PT, IT. To add a language: add a new `XxxStrings` val and one `when` branch in `getStrings()`.
 
 Content descriptions are applied to: all action buttons (AC/C, +/-, %, ⌫, =), all non-obvious scientific buttons (1/x, asin/acos/atan, xʸ, √x, x², π, e, (, )), and the expression/result display rows.
 

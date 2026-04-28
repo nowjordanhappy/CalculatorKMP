@@ -42,7 +42,7 @@ A calculator app built with **Kotlin Multiplatform** and **Compose Multiplatform
 ### Accessibility & Localization
 - Screen reader content descriptions on all non-obvious buttons (action keys, scientific functions)
 - Semantics on expression and result display rows
-- English and Spanish — auto-detected from device locale
+- English, Spanish, French, German, Portuguese, Italian — auto-detected from device locale
 
 ### Layout
 - Portrait: stacked layout (scientific rows above basic rows)
