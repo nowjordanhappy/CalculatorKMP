@@ -26,6 +26,7 @@ Kotlin Multiplatform + Compose Multiplatform calculator app targeting Android, i
   CalculatorState.kt               ← expression, result, error, isRad, isAcMode
   CalculatorAction.kt              ← sealed interface of all calculator user actions
   ButtonLabels.kt                  ← string constants for all button labels
+  Strings.kt                       ← Strings data class, EnStrings, EsStrings, LocalStrings, getStrings()
   components/
     CalcButton.kt                  ← button with ButtonType, buttonHeight?, aspectRatio fallback
     CalcRow.kt                     ← Row(fillMaxWidth, spacedBy 12dp)
@@ -186,6 +187,30 @@ Automatically inserted in two places:
 - Constants: `π` (3.14159…), `e` (2.71828…)
 - Parentheses (auto-balanced on `=` press)
 - DEG/RAD passed through to trig functions
+
+## Localization & Accessibility
+
+String resources live in `Strings.kt` in `:feature:calculator:presentation`. No external library — plain Kotlin.
+
+```kotlin
+// Strings.kt
+data class Strings(...)            // all UI strings + content descriptions
+val EnStrings = Strings(...)       // English (default)
+val EsStrings = Strings(...)       // Spanish
+val LocalStrings = staticCompositionLocalOf { EnStrings }
+fun getStrings(languageTag: String): Strings  // "es" → EsStrings, else EnStrings
+```
+
+`App.kt` wires locale detection:
+```kotlin
+val locale = Locale.current.toLanguageTag()
+val strings = remember(locale) { getStrings(locale) }
+CompositionLocalProvider(LocalStrings provides strings) { ... }
+```
+
+Components read strings via `LocalStrings.current`. To add a language: add a new `XxxStrings` val and one `when` branch in `getStrings()`.
+
+Content descriptions are applied to: all action buttons (AC/C, +/-, %, ⌫, =), all non-obvious scientific buttons (1/x, asin/acos/atan, xʸ, √x, x², π, e, (, )), and the expression/result display rows.
 
 ## Coding Conventions
 - No Co-Authored-By in commits

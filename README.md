@@ -39,6 +39,11 @@ A calculator app built with **Kotlin Multiplatform** and **Compose Multiplatform
 - System / Light / Dark — 3-state toggle button in the top-left corner
 - Preference persisted across app restarts
 
+### Accessibility & Localization
+- Screen reader content descriptions on all non-obvious buttons (action keys, scientific functions)
+- Semantics on expression and result display rows
+- English and Spanish — auto-detected from device locale
+
 ### Layout
 - Portrait: stacked layout (scientific rows above basic rows)
 - Landscape / tablet / desktop: side-by-side layout (scientific panel left, basic panel right)
