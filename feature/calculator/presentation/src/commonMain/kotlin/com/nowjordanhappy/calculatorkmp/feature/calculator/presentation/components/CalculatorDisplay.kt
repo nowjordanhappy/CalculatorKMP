@@ -13,11 +13,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.nowjordanhappy.calculatorkmp.core.domain.CalculatorError
+import com.nowjordanhappy.calculatorkmp.feature.calculator.presentation.LocalStrings
 
 @Composable
 fun CalculatorDisplay(
@@ -27,6 +30,7 @@ fun CalculatorDisplay(
     isAcMode: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
+    val strings = LocalStrings.current
     Column(
         modifier = modifier.fillMaxWidth().padding(horizontal = 8.dp),
         verticalArrangement = Arrangement.Bottom,
@@ -52,7 +56,10 @@ fun CalculatorDisplay(
             val exprScrollState = rememberScrollState()
             LaunchedEffect(expression) { exprScrollState.animateScrollTo(exprScrollState.maxValue) }
             Row(
-                modifier = Modifier.fillMaxWidth().horizontalScroll(exprScrollState),
+                modifier =
+                    Modifier.fillMaxWidth().horizontalScroll(exprScrollState).semantics {
+                        contentDescription = strings.displayExpression
+                    },
                 horizontalArrangement = Arrangement.End,
             ) {
                 Text(
@@ -70,16 +77,18 @@ fun CalculatorDisplay(
                 color = MaterialTheme.colorScheme.onBackground,
                 textAlign = TextAlign.End,
                 maxLines = 1,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().semantics { contentDescription = strings.displayResult },
             )
         } else {
             val exprScrollState = rememberScrollState()
             LaunchedEffect(expression) {
-                if (isAcMode) exprScrollState.scrollTo(0)
-                else exprScrollState.animateScrollTo(exprScrollState.maxValue)
+                if (isAcMode) exprScrollState.scrollTo(0) else exprScrollState.animateScrollTo(exprScrollState.maxValue)
             }
             Row(
-                modifier = Modifier.fillMaxWidth().horizontalScroll(exprScrollState),
+                modifier =
+                    Modifier.fillMaxWidth().horizontalScroll(exprScrollState).semantics {
+                        contentDescription = strings.displayExpression
+                    },
                 horizontalArrangement = Arrangement.End,
             ) {
                 Text(

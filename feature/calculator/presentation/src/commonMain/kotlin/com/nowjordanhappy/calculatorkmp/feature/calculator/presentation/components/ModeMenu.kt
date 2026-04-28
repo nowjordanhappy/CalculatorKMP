@@ -16,6 +16,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import com.nowjordanhappy.calculatorkmp.feature.calculator.presentation.CalculatorAction
+import com.nowjordanhappy.calculatorkmp.feature.calculator.presentation.LocalStrings
 import kotlinx.coroutines.delay
 
 @Composable
@@ -27,6 +28,7 @@ fun ModeMenu(
     onScientificToggle: () -> Unit,
     onAction: (CalculatorAction) -> Unit,
 ) {
+    val strings = LocalStrings.current
     var showMenu by remember { mutableStateOf(false) }
     var pendingToggle by remember { mutableStateOf(false) }
     LaunchedEffect(showMenu) {
@@ -38,21 +40,25 @@ fun ModeMenu(
     }
     Box {
         IconButton(onClick = { showMenu = true }) {
-            Icon(Icons.Default.MoreVert, contentDescription = "Menu", tint = MaterialTheme.colorScheme.onBackground)
+            Icon(
+                Icons.Default.MoreVert,
+                contentDescription = strings.menuContentDescription,
+                tint = MaterialTheme.colorScheme.onBackground
+            )
         }
         DropdownMenu(
             expanded = showMenu,
             onDismissRequest = { showMenu = false },
         ) {
             DropdownMenuItem(
-                text = { Text("Basic${if (!isScientific) " ✓" else ""}") },
+                text = { Text("${strings.modeBasic}${if (!isScientific) " ✓" else ""}") },
                 onClick = {
                     if (isScientific) pendingToggle = true
                     showMenu = false
                 },
             )
             DropdownMenuItem(
-                text = { Text("Scientific${if (isScientific) " ✓" else ""}") },
+                text = { Text("${strings.modeScientific}${if (isScientific) " ✓" else ""}") },
                 onClick = {
                     if (!isScientific) pendingToggle = true
                     showMenu = false

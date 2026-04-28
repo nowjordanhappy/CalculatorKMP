@@ -14,6 +14,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -41,6 +43,7 @@ fun RowScope.CalcButton(
     text: String,
     type: ButtonType = ButtonType.Number,
     buttonHeight: Dp? = null,
+    contentDescription: String? = null,
     onClick: () -> Unit,
 ) {
     val containerColor =
@@ -73,9 +76,13 @@ fun RowScope.CalcButton(
             text.length > 2 -> 18.sp
             else -> 22.sp
         }
+    val descriptionModifier =
+        if (contentDescription != null) {
+            sizeModifier.semantics { this.contentDescription = contentDescription }
+        } else sizeModifier
     Button(
         onClick = onClick,
-        modifier = sizeModifier,
+        modifier = descriptionModifier,
         colors =
             ButtonDefaults.buttonColors(
                 containerColor = containerColor,

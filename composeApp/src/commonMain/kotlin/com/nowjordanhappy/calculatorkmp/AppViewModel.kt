@@ -7,12 +7,13 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
 class AppViewModel(private val repository: SettingsRepository) : ViewModel() {
-    private val _state = MutableStateFlow(
-        AppState(
-            themeMode = repository.themeMode,
-            isScientific = repository.isScientific,
+    private val _state =
+        MutableStateFlow(
+            AppState(
+                themeMode = repository.themeMode,
+                isScientific = repository.isScientific,
+            )
         )
-    )
     val state = _state.asStateFlow()
 
     fun onAction(action: AppAction) {

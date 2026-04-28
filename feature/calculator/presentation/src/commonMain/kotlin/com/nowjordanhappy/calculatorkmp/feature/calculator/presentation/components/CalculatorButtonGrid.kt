@@ -9,6 +9,7 @@ import androidx.compose.ui.unit.dp
 import com.nowjordanhappy.calculatorkmp.core.domain.Constants
 import com.nowjordanhappy.calculatorkmp.feature.calculator.presentation.ButtonLabels
 import com.nowjordanhappy.calculatorkmp.feature.calculator.presentation.CalculatorAction
+import com.nowjordanhappy.calculatorkmp.feature.calculator.presentation.LocalStrings
 
 @Composable
 fun CalculatorButtonGrid(
@@ -17,6 +18,7 @@ fun CalculatorButtonGrid(
     buttonHeight: Dp? = null,
     isAcMode: Boolean = true,
 ) {
+    val strings = LocalStrings.current
     val rowSpacing = if (buttonHeight != null) 8.dp else 12.dp
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(rowSpacing)) {
         CalcRow {
@@ -24,13 +26,24 @@ fun CalculatorButtonGrid(
                 if (isAcMode) ButtonLabels.Basic.AC else ButtonLabels.Basic.CLEAR,
                 ButtonType.Action,
                 buttonHeight = buttonHeight,
+                contentDescription = strings.buttonClear,
             ) {
                 onAction(CalculatorAction.OnClearClick)
             }
-            CalcButton(ButtonLabels.Basic.SIGN_TOGGLE, ButtonType.Action, buttonHeight = buttonHeight) {
+            CalcButton(
+                ButtonLabels.Basic.SIGN_TOGGLE,
+                ButtonType.Action,
+                buttonHeight = buttonHeight,
+                contentDescription = strings.buttonToggleSign,
+            ) {
                 onAction(CalculatorAction.OnSignToggleClick)
             }
-            CalcButton(ButtonLabels.Basic.PERCENT, ButtonType.Action, buttonHeight = buttonHeight) {
+            CalcButton(
+                ButtonLabels.Basic.PERCENT,
+                ButtonType.Action,
+                buttonHeight = buttonHeight,
+                contentDescription = strings.buttonPercent,
+            ) {
                 onAction(CalculatorAction.OnPercentClick)
             }
             CalcButton(Constants.OPERATOR_DIV, ButtonType.Operator, buttonHeight = buttonHeight) {
@@ -62,12 +75,22 @@ fun CalculatorButtonGrid(
             }
         }
         CalcRow {
-            CalcButton(ButtonLabels.Basic.DELETE, ButtonType.Action, buttonHeight = buttonHeight) {
+            CalcButton(
+                ButtonLabels.Basic.DELETE,
+                ButtonType.Action,
+                buttonHeight = buttonHeight,
+                contentDescription = strings.buttonDelete,
+            ) {
                 onAction(CalculatorAction.OnDeleteClick)
             }
             CalcButton("0", buttonHeight = buttonHeight) { onAction(CalculatorAction.OnNumberClick("0")) }
             CalcButton(Constants.POINT, buttonHeight = buttonHeight) { onAction(CalculatorAction.OnPointClick) }
-            CalcButton(ButtonLabels.Basic.EQUALS, ButtonType.Equals, buttonHeight = buttonHeight) {
+            CalcButton(
+                ButtonLabels.Basic.EQUALS,
+                ButtonType.Equals,
+                buttonHeight = buttonHeight,
+                contentDescription = strings.buttonEquals,
+            ) {
                 onAction(CalculatorAction.OnResolveClick)
             }
         }
