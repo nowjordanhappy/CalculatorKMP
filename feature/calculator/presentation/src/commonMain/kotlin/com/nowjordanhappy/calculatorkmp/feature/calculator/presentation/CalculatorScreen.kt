@@ -131,6 +131,7 @@ fun CalculatorScreen(
                 expression = state.expression,
                 result = state.result,
                 error = state.error,
+                isAcMode = state.isAcMode,
                 modifier = Modifier.weight(1f),
             )
 

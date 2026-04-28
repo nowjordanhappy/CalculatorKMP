@@ -145,7 +145,7 @@ macOS animates window resize over ~200ms. `BoxWithConstraints` recomposes on eve
 - **Current approach**: Box with CenterStart (sci) + CenterEnd (basic), fixed widths from LayoutConfig, no Compose animation. Window resize IS the animation.
 
 ### iOS Physical Device
-Kotlin 2.2.0 + CMP 1.9.0-beta01 crashes on iosArm64 (physical device). Simulator works fine. Awaiting upstream fix.
+Fixed in CMP 1.10.0. Both simulator and physical device (iosArm64) work correctly.
 
 ### iOS Simulator in Android Studio
 AS device picker broken for iOS. Use shell script run configuration:

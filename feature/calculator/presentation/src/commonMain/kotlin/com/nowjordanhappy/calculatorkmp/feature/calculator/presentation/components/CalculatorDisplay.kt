@@ -24,6 +24,7 @@ fun CalculatorDisplay(
     expression: String,
     result: String,
     error: CalculatorError?,
+    isAcMode: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -73,7 +74,10 @@ fun CalculatorDisplay(
             )
         } else {
             val exprScrollState = rememberScrollState()
-            LaunchedEffect(expression) { exprScrollState.animateScrollTo(exprScrollState.maxValue) }
+            LaunchedEffect(expression) {
+                if (isAcMode) exprScrollState.scrollTo(0)
+                else exprScrollState.animateScrollTo(exprScrollState.maxValue)
+            }
             Row(
                 modifier = Modifier.fillMaxWidth().horizontalScroll(exprScrollState),
                 horizontalArrangement = Arrangement.End,

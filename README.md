@@ -60,7 +60,7 @@ A calculator app built with **Kotlin Multiplatform** and **Compose Multiplatform
 |---|---|
 | Android | ✅ Running |
 | iOS Simulator | ✅ Running |
-| iOS Device | ⚠️ Crashes (Kotlin 2.2.0 + CMP 1.9.0-beta01 iosArm64 bug — awaiting upstream fix) |
+| iOS Device | ✅ Running |
 | Desktop (macOS) | ✅ Running |
 
 ## Project Structure
