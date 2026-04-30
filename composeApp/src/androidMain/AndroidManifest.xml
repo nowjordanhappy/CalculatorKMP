@@ -6,7 +6,7 @@
         android:label="CalculatorKMP"
         android:icon="@mipmap/ic_launcher"
         android:roundIcon="@mipmap/ic_launcher_round"
-        android:theme="@android:style/Theme.Material.Light.NoActionBar"
+        android:theme="@style/Theme.CalculatorKMP"
         android:supportsRtl="true">
 
         <activity
