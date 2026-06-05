@@ -48,5 +48,29 @@ android {
         versionCode = libs.versions.appVersionCode.get().toInt()
         versionName = libs.versions.appVersionName.get()
     }
+    val localProps =
+        java.util.Properties().apply {
+            val f = rootProject.file("local.properties")
+            if (f.exists()) load(f.inputStream())
+        }
+    signingConfigs {
+        create("release") {
+            storeFile = localProps["RELEASE_STORE_FILE"]?.let { file(it) }
+            storePassword = localProps["RELEASE_STORE_PASSWORD"] as String?
+            keyAlias = localProps["RELEASE_KEY_ALIAS"] as String?
+            keyPassword = localProps["RELEASE_KEY_PASSWORD"] as String?
+        }
+    }
+    buildTypes {
+        debug {
+            applicationIdSuffix = ".debug"
+            isDebuggable = true
+        }
+        release {
+            isMinifyEnabled = false
+            signingConfig = signingConfigs.getByName("release")
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+        }
+    }
     packaging { resources.excludes += "/META-INF/{AL2.0,LGPL2.1}" }
 }

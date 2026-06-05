@@ -1,0 +1,101 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  android:
+    name: Android (AAB + APK)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Decode keystore
+        run: echo "${{ secrets.RELEASE_KEYSTORE }}" | base64 -d > keystore.jks
+
+      - name: Write signing config to local.properties
+        run: |
+          echo "RELEASE_STORE_FILE=${{ github.workspace }}/keystore.jks" >> local.properties
+          echo "RELEASE_STORE_PASSWORD=${{ secrets.RELEASE_STORE_PASSWORD }}" >> local.properties
+          echo "RELEASE_KEY_ALIAS=${{ secrets.RELEASE_KEY_ALIAS }}" >> local.properties
+          echo "RELEASE_KEY_PASSWORD=${{ secrets.RELEASE_KEY_PASSWORD }}" >> local.properties
+
+      - name: Build release AAB and APK
+        run: ./gradlew :composeApp:bundleRelease :composeApp:assembleRelease
+
+      - name: Upload AAB to Play Store internal track
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: com.nowjordanhappy.materialcalculator
+          releaseFiles: composeApp/build/outputs/bundle/release/*.aab
+          track: internal
+
+      - name: Attach APK to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: composeApp/build/outputs/apk/release/*.apk
+
+  desktop-macos:
+    name: Desktop macOS (.dmg)
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Build DMG
+        run: ./gradlew :composeApp:packageDmg
+
+      - name: Attach DMG to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: composeApp/build/compose/binaries/main/dmg/*.dmg
+
+  desktop-windows:
+    name: Desktop Windows (.msi)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Build MSI
+        run: ./gradlew :composeApp:packageMsi
+
+      - name: Attach MSI to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: composeApp/build/compose/binaries/main/msi/*.msi
+
+  desktop-linux:
+    name: Desktop Linux (.deb)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Build DEB
+        run: ./gradlew :composeApp:packageDeb
+
+      - name: Attach DEB to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: composeApp/build/compose/binaries/main/deb/*.deb
