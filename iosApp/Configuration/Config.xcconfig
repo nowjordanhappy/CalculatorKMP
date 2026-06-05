@@ -1,7 +1,10 @@
-TEAM_ID=
+// Local.xcconfig is gitignored — create it from Local.xcconfig.example to set your Team ID
+#include? "Local.xcconfig"
 
-PRODUCT_NAME=CalculatorKMP
-PRODUCT_BUNDLE_IDENTIFIER=com.jordanrojas.calculatorkmp
+DEVELOPMENT_TEAM =
+
+PRODUCT_NAME=Calculator Suite
+PRODUCT_BUNDLE_IDENTIFIER=com.nowjordanhappy.calculatorsuite
 
 CURRENT_PROJECT_VERSION=1
 MARKETING_VERSION=1.0

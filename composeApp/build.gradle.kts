@@ -34,7 +34,9 @@ kotlin {
             implementation(libs.activity.compose)
             implementation(libs.koin.android)
         }
-        val desktopMain by getting { dependencies { implementation(compose.desktop.currentOs) } }
+            val desktopMain by getting {
+            dependencies { implementation(compose.desktop.currentOs) }
+        }
     }
 }
 
@@ -73,4 +75,25 @@ android {
         }
     }
     packaging { resources.excludes += "/META-INF/{AL2.0,LGPL2.1}" }
+}
+
+compose.desktop {
+    application {
+        mainClass = "com.nowjordanhappy.calculatorkmp.MainKt"
+        nativeDistributions {
+            targetFormats(
+                org.jetbrains.compose.desktop.application.dsl.TargetFormat.Dmg,
+                org.jetbrains.compose.desktop.application.dsl.TargetFormat.Msi,
+                org.jetbrains.compose.desktop.application.dsl.TargetFormat.Deb,
+            )
+            packageName = "Calculator Suite"
+            packageVersion = libs.versions.appVersionName.get()
+            description = "Calculator Suite"
+            copyright = "© 2025 Jordan Rojas"
+            vendor = "Jordan Rojas"
+            macOS { bundleID = "com.nowjordanhappy.calculatorsuite" }
+            windows { upgradeUuid = "2B3F4C5D-6E7F-8A9B-0C1D-2E3F4A5B6C7D" }
+            linux { packageName = "calculator-suite" }
+        }
+    }
 }
