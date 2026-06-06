@@ -1,0 +1,12 @@
+# Copy this file to local.properties and fill in your values.
+# NEVER commit local.properties — it is gitignored.
+
+# Android SDK path (set automatically by Android Studio)
+sdk.dir=/path/to/Android/sdk
+
+# Android release signing
+# RELEASE_STORE_FILE: absolute path to your .jks keystore (store it outside the repo)
+RELEASE_STORE_FILE=/path/to/your/keystore.jks
+RELEASE_STORE_PASSWORD=
+RELEASE_KEY_ALIAS=
+RELEASE_KEY_PASSWORD=

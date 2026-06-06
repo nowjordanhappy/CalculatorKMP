@@ -18,6 +18,9 @@ local.properties
 # Claude
 .claude/
 
+# iOS - local signing config (never commit)
+iosApp/Configuration/Local.xcconfig
+
 # iOS - user-specific Xcode data
 iosApp/iosApp.xcodeproj/xcuserdata/
 iosApp/iosApp.xcodeproj/project.xcworkspace/xcuserdata/
@@ -31,6 +34,9 @@ DerivedData/
 # KMP - generated iOS framework (built by Gradle)
 **/iosApp/Pods/
 composeApp/build/
+
+# Firebase — never commit, use GitHub Secret GOOGLE_SERVICES_JSON
+**/google-services.json
 
 # Android
 *.apk

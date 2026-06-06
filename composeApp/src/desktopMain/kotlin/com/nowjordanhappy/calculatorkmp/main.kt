@@ -46,7 +46,7 @@ fun main() {
     application {
         val initialIsScientific = GlobalContext.get().get<SettingsRepository>().isScientific
         val windowState = rememberWindowState(size = computeWindowSize(initialIsScientific))
-        Window(onCloseRequest = ::exitApplication, title = "CalculatorKMP", state = windowState, resizable = false) {
+        Window(onCloseRequest = ::exitApplication, title = "Calculator Suite", state = windowState, resizable = false) {
             val appViewModel = koinViewModel<AppViewModel>()
             val appState by appViewModel.state.collectAsState()
             LaunchedEffect(appState.isScientific) { windowState.size = computeWindowSize(appState.isScientific) }

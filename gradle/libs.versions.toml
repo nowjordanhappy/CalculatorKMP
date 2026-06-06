@@ -9,6 +9,10 @@ koin = "4.1.0"
 activity = "1.10.1"
 spotless = "6.25.0"
 multiplatform-settings = "1.1.0"
+firebase-analytics = "22.2.0"
+firebase-crashlytics = "19.3.0"
+google-services = "4.4.2"
+firebase-crashlytics-gradle = "3.0.3"
 minSdk = "24"
 compileSdk = "35"
 targetSdk = "35"
@@ -25,6 +29,8 @@ koin-compose = { module = "io.insert-koin:koin-compose", version.ref = "koin" }
 koin-composevm = { module = "io.insert-koin:koin-compose-viewmodel", version.ref = "koin" }
 activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activity" }
 multiplatform-settings-noarg = { module = "com.russhwolf:multiplatform-settings-no-arg", version.ref = "multiplatform-settings" }
+firebase-analytics = { module = "com.google.firebase:firebase-analytics-ktx", version.ref = "firebase-analytics" }
+firebase-crashlytics = { module = "com.google.firebase:firebase-crashlytics-ktx", version.ref = "firebase-crashlytics" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
@@ -37,3 +43,5 @@ convention-kmp-library = { id = "convention.kmp.library", version = "unspecified
 convention-cmp-feature = { id = "convention.cmp.feature", version = "unspecified" }
 convention-cmp-application = { id = "convention.cmp.application", version = "unspecified" }
 spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
+google-services = { id = "com.google.gms.google-services", version.ref = "google-services" }
+firebase-crashlytics-gradle = { id = "com.google.firebase.crashlytics", version.ref = "firebase-crashlytics-gradle" }
