@@ -98,9 +98,18 @@ compose.desktop {
             description = "Calculator Suite"
             copyright = "© 2025 Jordan Rojas"
             vendor = "Jordan Rojas"
-            macOS { bundleID = "com.nowjordanhappy.calculatorsuite" }
-            windows { upgradeUuid = "2B3F4C5D-6E7F-8A9B-0C1D-2E3F4A5B6C7D" }
-            linux { packageName = "calculator-suite" }
+            macOS {
+                bundleID = "com.nowjordanhappy.calculatorsuite"
+                iconFile.set(project.file("icons/icon.icns"))
+            }
+            windows {
+                upgradeUuid = "2B3F4C5D-6E7F-8A9B-0C1D-2E3F4A5B6C7D"
+                iconFile.set(project.file("icons/icon.ico"))
+            }
+            linux {
+                packageName = "calculator-suite"
+                iconFile.set(project.file("icons/icon.png"))
+            }
         }
     }
 }
