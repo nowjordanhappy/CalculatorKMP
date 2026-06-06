@@ -82,6 +82,7 @@ jobs:
           distribution: 'temurin'
 
       - name: Build MSI
+        shell: bash
         run: ./gradlew :composeApp:packageMsi
 
       - name: Attach MSI to GitHub Release
