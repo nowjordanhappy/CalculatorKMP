@@ -58,6 +58,13 @@ jobs:
       - name: Attach APK to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
+          name: Calculator Suite ${{ github.ref_name }}
+          body: |
+            **Downloads**
+            - Android APK — attached below (or install via Google Play)
+            - macOS — `.dmg` attached below
+            - Windows — `.msi` attached below
+            - Linux — `.deb` attached below
           files: composeApp/build/outputs/apk/release/*.apk
 
   desktop-macos:
@@ -77,6 +84,7 @@ jobs:
       - name: Attach DMG to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
+          name: Calculator Suite ${{ github.ref_name }}
           files: composeApp/build/compose/binaries/main/dmg/*.dmg
 
   desktop-windows:
@@ -97,6 +105,7 @@ jobs:
       - name: Attach MSI to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
+          name: Calculator Suite ${{ github.ref_name }}
           files: composeApp/build/compose/binaries/main/msi/*.msi
 
   desktop-linux:
@@ -116,4 +125,5 @@ jobs:
       - name: Attach DEB to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
+          name: Calculator Suite ${{ github.ref_name }}
           files: composeApp/build/compose/binaries/main/deb/*.deb
