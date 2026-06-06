@@ -58,8 +58,9 @@ android {
         applicationId = "com.nowjordanhappy.materialcalculator"
         minSdk = libs.versions.minSdk.get().toInt()
         targetSdk = libs.versions.targetSdk.get().toInt()
-        versionCode = libs.versions.appVersionCode.get().toInt()
-        versionName = libs.versions.appVersionName.get()
+        versionCode = System.getenv("VERSION_CODE")?.toIntOrNull()
+            ?: libs.versions.appVersionCode.get().toInt()
+        versionName = System.getenv("VERSION_NAME") ?: libs.versions.appVersionName.get()
     }
     signingConfigs {
         create("release") {
