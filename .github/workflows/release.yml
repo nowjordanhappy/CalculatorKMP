@@ -53,6 +53,7 @@ jobs:
           packageName: com.nowjordanhappy.materialcalculator
           releaseFiles: composeApp/build/outputs/bundle/release/*.aab
           track: internal
+          status: completed
 
       - name: Attach APK to GitHub Release
         uses: softprops/action-gh-release@v2
