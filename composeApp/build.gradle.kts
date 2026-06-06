@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.android.application)
@@ -5,6 +7,11 @@ plugins {
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.google.services)
     alias(libs.plugins.firebase.crashlytics.gradle)
+}
+
+val localProps = Properties().apply {
+    val f = rootProject.file("local.properties")
+    if (f.exists()) load(f.inputStream())
 }
 
 kotlin {
@@ -35,11 +42,10 @@ kotlin {
         androidMain.dependencies {
             implementation(libs.activity.compose)
             implementation(libs.koin.android)
-            implementation(platform(libs.firebase.bom))
             implementation(libs.firebase.analytics)
             implementation(libs.firebase.crashlytics)
         }
-            val desktopMain by getting {
+        val desktopMain by getting {
             dependencies { implementation(compose.desktop.currentOs) }
         }
     }
@@ -55,17 +61,13 @@ android {
         versionCode = libs.versions.appVersionCode.get().toInt()
         versionName = libs.versions.appVersionName.get()
     }
-    val localProps =
-        java.util.Properties().apply {
-            val f = rootProject.file("local.properties")
-            if (f.exists()) load(f.inputStream())
-        }
     signingConfigs {
         create("release") {
-            storeFile = localProps["RELEASE_STORE_FILE"]?.let { file(it) }
-            storePassword = localProps["RELEASE_STORE_PASSWORD"] as String?
-            keyAlias = localProps["RELEASE_KEY_ALIAS"] as String?
-            keyPassword = localProps["RELEASE_KEY_PASSWORD"] as String?
+            val storePath = localProps.getProperty("RELEASE_STORE_FILE")
+            storeFile = if (storePath != null) file(storePath) else null
+            storePassword = localProps.getProperty("RELEASE_STORE_PASSWORD")
+            keyAlias = localProps.getProperty("RELEASE_KEY_ALIAS")
+            keyPassword = localProps.getProperty("RELEASE_KEY_PASSWORD")
         }
     }
     buildTypes {
