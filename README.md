@@ -1,6 +1,47 @@
 # CalculatorKMP
 
-A calculator app built with **Kotlin Multiplatform** and **Compose Multiplatform**, sharing 100% of UI and logic across Android, iOS, and Desktop (macOS) from a single codebase.
+A calculator app built with **Kotlin Multiplatform** and **Compose Multiplatform**, sharing 100% of UI and logic across Android, iOS, and Desktop (macOS, Windows, Linux) from a single codebase.
+
+## Screenshots
+
+### Android
+
+<table>
+  <tr>
+    <td><img src="screenshots/android/light-basic.png" width="200"/></td>
+    <td><img src="screenshots/android/dark-scientific.png" width="200"/></td>
+  </tr>
+  <tr>
+    <td align="center">Basic — Light</td>
+    <td align="center">Scientific — Dark</td>
+  </tr>
+</table>
+
+### iOS
+
+<table>
+  <tr>
+    <td><img src="screenshots/ios/dark-basic.png" width="200"/></td>
+    <td><img src="screenshots/ios/light-scientific.png" width="200"/></td>
+  </tr>
+  <tr>
+    <td align="center">Basic — Dark</td>
+    <td align="center">Scientific — Light</td>
+  </tr>
+</table>
+
+### Desktop (macOS)
+
+<table>
+  <tr>
+    <td><img src="screenshots/desktop/light-basic.png" width="340"/></td>
+    <td><img src="screenshots/desktop/dark-scientific.png" width="340"/></td>
+  </tr>
+  <tr>
+    <td align="center">Basic — Light</td>
+    <td align="center">Scientific — Dark</td>
+  </tr>
+</table>
 
 ## Features
 
