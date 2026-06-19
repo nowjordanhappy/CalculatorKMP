@@ -2,6 +2,8 @@
 
 A calculator app built with **Kotlin Multiplatform** and **Compose Multiplatform**, sharing 100% of UI and logic across Android, iOS, and Desktop (macOS, Windows, Linux) from a single codebase.
 
+[<img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" height="60">](https://play.google.com/store/apps/details?id=com.nowjordanhappy.materialcalculator)
+
 ## Screenshots
 
 ### Android
@@ -42,6 +44,8 @@ A calculator app built with **Kotlin Multiplatform** and **Compose Multiplatform
     <td align="center">Scientific — Dark</td>
   </tr>
 </table>
+
+> Play Store screenshots created with [AppShotDeck](https://github.com/nowjordanhappy/appshotdeck).
 
 ## Features
 
