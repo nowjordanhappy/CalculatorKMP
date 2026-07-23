@@ -14,9 +14,9 @@ firebase-crashlytics = "19.3.0"
 google-services = "4.4.2"
 firebase-crashlytics-gradle = "3.0.3"
 minSdk = "24"
-compileSdk = "35"
-targetSdk = "35"
-appVersionName = "2.0.0"
+compileSdk = "36"
+targetSdk = "36"
+appVersionName = "2.0.1"
 appVersionCode = "15"
 
 [libraries]
